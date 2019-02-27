@@ -1,0 +1,8 @@
+on why encryption is important:
+https://www.wired.com/story/ditch-all-those-other-messaging-apps-heres-why-you-should-use-signal/
+relating to privacy and distribution:
+https://www.usenix.org/conference/nsdi17/technical-sessions/presentation/wang-frank
+p2p encrypted messaging apps:
+https://en.wikipedia.org/wiki/Signal_(software) (open-source:
+https://github.com/signalapp)
+https://tox.chat/ (open-source: https://github.com/Tox/tox.chat)
