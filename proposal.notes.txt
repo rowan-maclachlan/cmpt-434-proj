@@ -6,3 +6,99 @@ p2p encrypted messaging apps:
 https://en.wikipedia.org/wiki/Signal_(software) (open-source:
 https://github.com/signalapp)
 https://tox.chat/ (open-source: https://github.com/Tox/tox.chat)
+
+When considering the IDs of peers on a chat client, how do we verify their
+identity?  Consider the digital signatures chapter in Tanenbaum (8.4)
+
+See Tanenbaum on end-to-end encryption (at the transport layer) where process to
+process communication is encrypted fully.  
+
+How can routing between 2 peers be hidden on the network?  The full data cannot
+be encrypted - the routers need to see the source and destination address and IP
+headers.  How do we hide where communications are taking place?
+
+RSA can be used to provide both authentication and secrecy, or authentication
+alone - see SHA-1 and SHA-2
+
+How do we verify that I have the correct public key for someone I want to
+communicate privately with?
+We use something called CA (certification authorities) to validate that public
+keys belong to the ones who claim them.
+
+How does 'tunnel mode' of IPsec prevent the inspection of traffic flows by
+intruders?
+
+What is the concept or issue that we intend to study?
+peer-to-peer (end-to-end) encryption
+
+What relevance does https://ipfs.io/ have to this research?
+
+We intend to study end-to-end encryption for chat program over the internet.
+    - user-verification
+      - What is the role of DHT (distributed hash tables) in managing user
+        identities on the web?  How do we query user itentities on the web?
+        see https://en.wikipedia.org/wiki/Distributed_hash_table
+        https://github.com/savoirfairelinux/opendht/wiki/What-are-Distributed-Hash-Tables-%3F
+        http://wiki.tox.im/index.php/DHT
+    - where is chat history stored?  How do you verify history?  Do you allow
+      chat history to be changed?  How do you protect it?
+      Maybe it follows a similar principle as this: 
+      http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.78.4174&rep=rep1&type=pdf
+      - Is it stored in a distributed way on different systems of the users
+        participating in the chat?  Is it stored in bits and pieces by everyone
+        with the application?
+    - How do we set up a system where user profiles are not stored centrally,
+      but by individual users?  How do we then verify user identity?
+        - There is a lot to go on here.  Various cryptographic algorithms and
+          authentication techniques have been designed to handle such things.
+    - What are the advantages of using onion-routing to maintain user anonymity
+
+https://en.wikipedia.org/wiki/NaCl_(software)
+    - we could use this as our encryption library: this is the same as that used
+      by Tox
+
+Blockchain technology becoming more and more widespread. Blockchain is a
+distributed database with high fault tolerance and security by design.
+
+according the CAP theorem (Brewer Theorem) it is impossible for a distributed
+system to provide all of Consistency, Availability, and Partition Tolerance
+Distributed Data Store, Hash Table, Distributed Hash Table
+Implementations of DHTs
+    Kademlia:
+    https://github.com/savoirfairelinux/opendht/
+
+Design issues for DHT implementations:
+    - What is the application we want to consider to inform our design?  Our
+      envisioned application may effect what we optimize our DHT for.
+      - User profile information?
+    - How many nodes store the data of a single file?  We can start with a
+      single node on a network, but what do we want to achieve?
+    - Do we store an entire file on a single node, or do we distribute a single
+      file hash in incomplete parts through the network?
+
+    - address space: how large are the hash keys?  128 bits?  160 bits?
+    - What kind of hash function do we use?  Do we use a cryptographically
+      secure hash function such as SHA-1 or SHA-2 or do we use an unsecure hash
+      function?
+    - Do we hash the file's content or the file's name?  If we hash the file
+      name, how do we enforce unique file identifiers?
+    - Any hash function will have collisions.  How do we manage collisions?
+      Do we chain hash contents at the site of storage or do we dissallow
+      colliding files?
+    - Any hash function will have collisions.  How do we manage collisions?
+      Do we chain hash contents at the site of storage or do we dissallow
+      colliding files?
+    - What about the keyspace partitioning?  Is it possible for us to avoid the
+      issue of key-space re-mapping (changing the node location of data) when
+      adding or removing nodes from the network?
+      - consistent hashing vs rendezvous hashing, both methods of dealing with
+        this possibility.
+    Clearly, the hashing method and design we choose is a central component and
+    will have large ramifications for the rest of the project.  As best we can,
+    we must keep the hashing technique decoupled from the rest of the system in
+    our implementation so as to avoid creating unnecessary work.
+
+Chord (https://en.wikipedia.org/wiki/Chord_(peer-to-peer)) vs 
+CAN vs Tapestry vs Pastry
+    - all examples of DHT protocols.  How does Kademlia tie into these?
+    - Chord itself appears to be a protocol for node discovery and linkage.
