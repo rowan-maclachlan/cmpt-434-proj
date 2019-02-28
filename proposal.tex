@@ -1,73 +1,89 @@
-on why encryption is important:
-https://www.wired.com/story/ditch-all-those-other-messaging-apps-heres-why-you-should-use-signal/
-relating to privacy and distribution:
-https://www.usenix.org/conference/nsdi17/technical-sessions/presentation/wang-frank
-p2p encrypted messaging apps:
-https://en.wikipedia.org/wiki/Signal_(software) (open-source:
-https://github.com/signalapp)
-https://tox.chat/ (open-source: https://github.com/Tox/tox.chat)
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}  % Font encoding
+\usepackage{mathptmx}     % Choose Times font 
+\usepackage{microtype}    % Improves line breaks      
+\usepackage{blindtext}    % Filler text 
+\usepackage{hyperref}     % for urls with /url{}
 
-When considering the IDs of peers on a chat client, how do we verify their
-identity?  Consider the digital signatures chapter in Tanenbaum (8.4)
+%Margin --- 1 inch on all sides
+\usepackage[letterpaper]{geometry}
+\usepackage{times}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{xparse}
+\usepackage[font=small,labelfont=bf]{caption}
+\NewDocumentCommand{\codeword}{v}{%
+	\texttt{\textcolor{blue}{#1}}%
+}
+\geometry{top=1.0in, bottom=1.0in, left=1.0in, right=1.0in}
 
-See Tanenbaum on end-to-end encryption (at the transport layer) where process to
-process communication is encrypted fully.  
+\usepackage{indentfirst} % Indent the first paragraph after section headings
+\setlength{\parskip}{1em} % Set inter-paragraph spacing
+\setlength{\parindent}{2em} % Set paragraph indentation
+\usepackage{titlesec}
 
-How can routing between 2 peers be hidden on the network?  The full data cannot
-be encrypted - the routers need to see the source and destination address and IP
-headers.  How do we hide where communications are taking place?
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Title page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-RSA can be used to provide both authentication and secrecy, or authentication
-alone - see SHA-1 and SHA-2
+\begin{document}
+	
+	\titlepage{
+		\vspace*{150px} % Push down title
+		\centering % Centre title
+		{\large \sc A description of project concepts, milestones, and goals\\}
+		\vspace*{30px} % Push down sub text
+		\hrulefill \\
+		\vspace*{20px}
+		{\Huge \uppercase{Project Proposal\\}} % Title
+		\vspace*{20px}
+		\hrulefill \\
+		\vspace*{30px}
+		February 17, 2019\\
+		\vspace*{180px}
+		
+		\raggedright
+		\hfill
+		\textit{CMPT 434: Computer Networks} \\
+		\vspace*{8px}
+	    Christopher	Mykota-Reid
+		\hfill
+		Derek Eager\\
+		Rowan MacLachlan\\
+	}
+	
+	\pagebreak % Put title on its own page
+	
+	%\tableofcontents
+	
+	\pagebreak
+	
+    \section{Proposal Requirements:}
+    For an implementation project, you should:
+    \begin{itemize}
+        \item Describe what concept or issue you intend to study. 
+        \item Describe the objectives of your investigation. 
+        \item Give a brief plan of what you will do to investigate the issue. 
+        \item Describe expected measurements  or  criteria  by  which  you
+            intend  to  evaluate whether you've succeeded at your objective.
+    \end{itemize}
 
-How do we verify that I have the correct public key for someone I want to
-communicate privately with?
-We use something called CA (certification authorities) to validate that public
-keys belong to the ones who claim them.
-
-How does 'tunnel mode' of IPsec prevent the inspection of traffic flows by
-intruders?
-
-What is the concept or issue that we intend to study?
-peer-to-peer (end-to-end) encryption
-
-What relevance does https://ipfs.io/ have to this research?
-
-We intend to study end-to-end encryption for chat program over the internet.
-    - user-verification
-      - What is the role of DHT (distributed hash tables) in managing user
-        identities on the web?  How do we query user itentities on the web?
-        see https://en.wikipedia.org/wiki/Distributed_hash_table
-        https://github.com/savoirfairelinux/opendht/wiki/What-are-Distributed-Hash-Tables-%3F
-        http://wiki.tox.im/index.php/DHT
-    - where is chat history stored?  How do you verify history?  Do you allow
-      chat history to be changed?  How do you protect it?
-      Maybe it follows a similar principle as this: 
-      http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.78.4174&rep=rep1&type=pdf
-      - Is it stored in a distributed way on different systems of the users
-        participating in the chat?  Is it stored in bits and pieces by everyone
-        with the application?
-    - How do we set up a system where user profiles are not stored centrally,
-      but by individual users?  How do we then verify user identity?
-        - There is a lot to go on here.  Various cryptographic algorithms and
-          authentication techniques have been designed to handle such things.
-    - What are the advantages of using onion-routing to maintain user anonymity
-
-https://en.wikipedia.org/wiki/NaCl_(software)
+    \url{https://en.wikipedia.org/wiki/NaCl_(software)}
     - we could use this as our encryption library: this is the same as that used
       by Tox
 
-Blockchain technology becoming more and more widespread. Blockchain is a
-distributed database with high fault tolerance and security by design.
-
-according the CAP theorem (Brewer Theorem) it is impossible for a distributed
-system to provide all of Consistency, Availability, and Partition Tolerance
-Distributed Data Store, Hash Table, Distributed Hash Table
-Implementations of DHTs
-    Kademlia:
-    https://github.com/savoirfairelinux/opendht/
-
-Design issues for DHT implementations:
+    Blockchain technology becoming more and more widespread. Blockchain is a
+    distributed database with high fault tolerance and security by design.
+    
+    according the CAP theorem (Brewer Theorem) it is impossible for a distributed
+    system to provide all of Consistency, Availability, and Partition Tolerance
+    Distributed Data Store, Hash Table, Distributed Hash Table
+    Implementations of DHTs
+        Kademlia:
+        \url{https://github.com/savoirfairelinux/opendht/}
+    
+    Design issues for DHT implementations:
     - What is the application we want to consider to inform our design?  Our
       envisioned application may effect what we optimize our DHT for.
       - User profile information?
@@ -110,12 +126,11 @@ Design issues for DHT implementations:
     The second largest concern for a DHT is the node discovery and linkage.
     Once a file name has been hashed to a node, how do we find that node in the
     network?  There are a myriad of algorithms designed to do just that:
-    Chord (https://en.wikipedia.org/wiki/Chord_(peer-to-peer)) vs 
-    CAN vs Tapestry vs Pastry
+    Chord vs CAN vs Tapestry vs Pastry
     - all examples of DHT protocols.  How does Kademlia tie into these?
     - Chord itself appears to be a protocol for node discovery and linkage.
-      (https://en.wikipedia.org/wiki/Chord_(peer-to-peer))
-      (https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf)
+      \url{(https://en.wikipedia.org/wiki/Chord_(peer-to-peer))}
+      \url{(https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf)}
     - Kademlia uses an XOR function on a GUID (per-node unique identifier) to
       calculate the distance between two nodes, because the XOR satisfies the
       requirements of an ideal distance function:
@@ -124,10 +139,15 @@ Design issues for DHT implementations:
       - It satisfies the triangle inequality: that the sum of the distance from
         A to B to C must be greater than the distance between any two of them,
         unless they lie on a line.
-      (https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)
+      \url{(https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)}
       Applications using Kademlia or slightly modified version of the Kademlia
       algorithm include torrent clients such as BitTorrent, other P2P
       distributed file systems such as IPFS and Gnutella as well as P2P chat,
       voice, and file-sharing programs like Tox.
-
-
+	
+	\begin{thebibliography}{1}
+		\bibitem{am335x_ref}
+		\textbf{Texas Instruments AM335x processor Technical Reference}\\
+            This will serve as a primary technical reference.
+	\end{thebibliography}
+\end{document}
