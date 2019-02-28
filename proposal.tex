@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[12pt]{report}
 \usepackage[T1]{fontenc}  % Font encoding
 \usepackage{mathptmx}     % Choose Times font 
 \usepackage{microtype}    % Improves line breaks      
@@ -22,7 +22,12 @@
 \setlength{\parskip}{1em} % Set inter-paragraph spacing
 \setlength{\parindent}{2em} % Set paragraph indentation
 \usepackage{titlesec}
-
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\thebibliography}{%
+    \chapter*{\bibname}\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}{%
+    \section{References}}{}{}
+\makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title page
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -220,7 +225,7 @@
                     distance from A to B to C is greater than the distance
                     between any two of A, B, or C, unless they lie on a line.
             \end{itemize}
-            Applications using Kademlia or slightly modified version of the
+            Applications using Kademlia or slightly modified versions of the
             Kademlia algorithm include torrent clients such as BitTorrent, other
             P2P distributed file systems such as IPFS and Gnutella as well as
             P2P chat, voice, and file-sharing programs like Tox.
@@ -228,7 +233,12 @@
 
     Please see the bibliography for additional reading.
 	
-	\begin{thebibliography}{8}
+    \pagebreak
+
+\bibliographystyle{plain}
+\bibliography{bibliography}
+
+	\begin{thebibliography}{10}
 		\bibitem{ipfs-site}
             \textbf{\url{https://ipfs.io/}}\\
             The official site of the IPFS project.
@@ -259,7 +269,7 @@
             A protocol for internet overlay (overweb) object location and
             routing in potentially very large WANs.
         \bibitem{medium}
-	    	\textbf{\url{chor://medium.com/karachain/peer-to-peer-protocols-explained-3b1d947c4600}}\\
+	    	\textbf{\url{https://medium.com/karachain/peer-to-peer-protocols-explained-3b1d947c4600}}\\
             An pop-science article on peer-to-peer protocols.
 	\end{thebibliography}
 \end{document}
