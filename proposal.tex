@@ -84,7 +84,7 @@
     location of the object's hash value.  However, a distributed hash table is
     stored across nodes in a network, and this introduces a variety of
     complications involving node-lookup (finding the location of the stored data
-    from its hash in the network,) ensuring data redundancy (what happens if a
+    from its hash in the network), ensuring data redundancy (what happens if a
     node goes offline?), and data retrieval.  Although this technology is not
     \textit{new} by any standard, its continued use and development in various
     fields of application makes it a suitable candidate for an implementation
@@ -180,9 +180,6 @@
         \item Any hash function will have collisions.  How do we manage
             collisions?  Do we chain hash contents at the site of storage or do
             we dissallow colliding files?
-        \item Any hash function will have collisions.  How do we manage
-            collisions?  Do we chain hash contents at the site of storage or do
-            we dissallow colliding files?
         \item How does the \textit{CAP} theorem (or \textit{Brewer} Theorem)
             inform our implementation? What does it mean for it to be impossible
             for a distributed system to provide all of Consistency,
@@ -199,7 +196,7 @@
             at $hash(o) \pmod n$.  The other side of this issue is to address how
             objects stores at a node which dissappears are remapped to active
             nodes.  Two separate possibilities to resolve this issue are
-            consistent hashing and rendezvous hashing\\
+            consistent hashing and rendezvous hashing.\\
             Clearly, the hashing method and design we choose is a central
             component and will have large ramifications for the rest of the
             project.  As best we can, we must keep the hashing technique
