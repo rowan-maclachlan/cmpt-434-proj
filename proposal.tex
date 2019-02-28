@@ -40,7 +40,7 @@
 		\vspace*{20px}
 		\hrulefill \\
 		\vspace*{30px}
-		February 17, 2019\\
+		February 27, 2019\\
 		\vspace*{180px}
 		
 		\raggedright
@@ -55,7 +55,7 @@
 	
 	\pagebreak % Put title on its own page
 	
-	%\tableofcontents
+	\tableofcontents
 	
 	\pagebreak
 	
@@ -65,89 +65,204 @@
         \item Describe what concept or issue you intend to study. 
         \item Describe the objectives of your investigation. 
         \item Give a brief plan of what you will do to investigate the issue. 
-        \item Describe expected measurements  or  criteria  by  which  you
-            intend  to  evaluate whether you've succeeded at your objective.
+        \item Describe expected measurements or criteria by which you intend to
+            evaluate whether you've succeeded at your objective.
     \end{itemize}
 
-    \url{https://en.wikipedia.org/wiki/NaCl_(software)}
-    - we could use this as our encryption library: this is the same as that used
-      by Tox
-
-    Blockchain technology becoming more and more widespread. Blockchain is a
-    distributed database with high fault tolerance and security by design.
+    \section{Core Concepts}
+    What does peer-to-peer file sharing\cite{bittorrent-wiki}, blockchain,
+    crypto-currencies\cite{ethereum-rlp}, private peer-to-peer voice and text
+    messaging apps\cite{tox-site}, distributed social-media
+    platforms\cite{distributed-social-networks}, and interplanetary internet
+    models\cite{ipfs-site} have in common?  If you guessed: "Well, they all rely
+    upon or implement in some way a distributed data structure to achieve some
+    of their core functionality," you would be correct.  Most of the
+    technologies from the above list implement or utilize a distributed hash
+    table (or a similar distributed data structure, in the case of blockchain).
+    These DHTs are similar in principle to a regular hash table in that they
+    provide the structure for fast retrieval of an object by referencing the
+    location of the object's hash value.  However, a distributed hash table is
+    stored across nodes in a network, and this introduces a variety of
+    complications involving node-lookup (finding the location of the stored data
+    from its hash in the network,) ensuring data redundancy (what happens if a
+    node goes offline?), and data retrieval.  Although this technology is not
+    \textit{new} by any standard, its continued use and development in various
+    fields of application makes it a suitable candidate for an implementation
+    project.
     
-    according the CAP theorem (Brewer Theorem) it is impossible for a distributed
-    system to provide all of Consistency, Availability, and Partition Tolerance
-    Distributed Data Store, Hash Table, Distributed Hash Table
-    Implementations of DHTs
-        Kademlia:
-        \url{https://github.com/savoirfairelinux/opendht/}
+    \section{Objectives}
+    We hope that by implementing a very simple version of a DHT and by demonstrating
+    its use on a small network we will become familiar with the issues
+    overcome by the more large-scale applications of DHTs.  As referenced above,
+    these issues are myriad and often difficult to solve, but not impossible.
+    By implementing an incremental plan to gradually roll out more complex features, new
+    features, or re-implement sub-systems of our application, we will minimize
+    risk so as to end up with a viable end-product for our presentation, while
+    also taking full advantage of every learning opportunity which presents
+    itself.
+
+    \section{Directives}
+    The rough plan for our implementation project will be as follows:
+    \begin{enumerate}
+        \item Collect and collate relevant technical (algorithm descriptions,
+            source-code) and theoretical sources (papers) for the implementation
+            of DHTs.  This has already begun.
+        \item Divide the DHT into aspects.  Identify concerns such as hashing,
+            security, node discovery, redundancy, etc.  This has already begun.
+        \item Once the separate issues and their complexities are understood,
+            design a minimum-viable product for our implementation.  This MVP
+            should be modular and take advantage of as many pre-written
+            libraries as are available, while ignoring any details of a DHT
+            beyond its barest and least robust implementation.  It should also
+            take into consideration the test application we have in
+            mind.\footnote{Although it may not result in the most general implementation, it is
+            more important that the core concepts are applied
+            \textit{successfully} in our particular application.}
+        \item Once the MVP has been designed, identify aspects of it which can
+            be improved.  This will include things such as data redundancy
+            (storing hashed data at multiple nodes), caching, and node
+            deletion and addition (how is content from deleted nodes rehashed,
+            and how is load redistributed on node addition?).
+        \item Implement the MVP, keeping in mind the fact that a
+            modular design will make feature improvement and addition easier
+            than it would be in a poorly constructed monolithic design.
+        \item Once the MVP is implemented and we move onto more advanced
+            features, we have to consider the metrics and factors by which we
+            measure the effectiveness of our implementation.  What are its
+            drawbacks and restrictions?  How efficient is it at finding data on
+            the overweb (participating nodes on the internet)?  How efficiently is
+            data stored and updated?
+    \end{enumerate}
+    Naturally, the details of the implementation steps will evolve as our
+    understanding of the challenges deepens, so the initial steps of the plan
+    are the most important.
+
+    \section{Measurements and Criteria}
+    As referenced in the implementation plan, there are quantitative
+    measurements available when considering the success or failure of our
+    implementation.  Comparing these values to those achieved by more mature DHT
+    implementations will provide valuable insight into the challenges posed by
+    DHTs, and should be included in our final report.  However, the most
+    valuable metric will be the realization of a working MVP.  This may be
+    something as simple as the observed and correct distributed storage of one or more files on the
+    personal computers of the researchers (Chris and Rowan) or a more glorious
+    success - or, perhaps, the real success is the friends we made along the
+    way.
+
+%    \url{https://en.wikipedia.org/wiki/NaCl_(software)}
+%    - we could use this as our encryption library: this is the same as that used
+%      by Tox
+%   
+%    Implementations of DHTs
+%        Kademlia:
+%        \url{https://github.com/savoirfairelinux/opendht/}
     
-    Design issues for DHT implementations:
-    - What is the application we want to consider to inform our design?  Our
-      envisioned application may effect what we optimize our DHT for.
-      - User profile information?
-    - How many nodes store the data of a single file?  We can start with a
-      single node on a network, but what do we want to achieve?  What degree of
-      redundancy can be achieved and what overhead does this add?
-    - Do we store an entire file on a single node, or do we distribute a single
-      file hash in incomplete parts through the network?
+    \section{Additional Details}
+    Here, we list some of the technical considerations we will have to resolve
+    in our implementation project:
+    \begin{itemize}
+        \item How many nodes store the data of a single object?  We can start
+            with a single node on a network, but what do we want to achieve?
+            What degree of redundancy can be achieved and what overhead does
+            this add?
+        \item Is an entire object stored on each node, or do we distribute a
+            single object in incomplete parts through the network?
+        \item How large is the address space: how large are the hash keys?  128
+            bits?  160 bits?  We may not need to have a large address space for
+            our implementation, but just what are the consequences of this
+            choice?
+        \item What kind of hash function do we use?  Do we use a
+            cryptographically secure hash function such as SHA-1 or SHA-2 or do
+            we use an unsecure hash function?  What consequences and benefits do
+            different approaches confer?
+        \item Do we hash the object's identifier or the object data?  If we hash
+            the identifier, how do we enforce unique identifiers?
+        \item Any hash function will have collisions.  How do we manage
+            collisions?  Do we chain hash contents at the site of storage or do
+            we dissallow colliding files?
+        \item Any hash function will have collisions.  How do we manage
+            collisions?  Do we chain hash contents at the site of storage or do
+            we dissallow colliding files?
+        \item How does the \textit{CAP} theorem (or \textit{Brewer} Theorem)
+            inform our implementation? What does it mean for it to be impossible
+            for a distributed system to provide all of Consistency,
+            Availability, and Partition Tolerance?
+        \item What about the keyspace partitioning?  Is it possible for us to
+            avoid the issue of key-space re-mapping (changing the node location
+            of data) when adding or removing nodes from the network?\\
+            To better grasp this issue, consider the case where we use a direct
+            hashing method.  If there are $n$ nodes in the system, then we would
+            normally store object $o$ at the node $hash(o) \pmod n$.  When
+            someone wanted to look up object $o$, they would find it at node
+            $hash(o) \pmod n$.  However, if a node disappears and the number of
+            active nodes decreases by one, we can no longer find the object $o$
+            at $hash(o) \pmod n$.  The other side of this issue is to address how
+            objects stores at a node which dissappears are remapped to active
+            nodes.  Two separate possibilities to resolve this issue are
+            consistent hashing and rendezvous hashing\\
+            Clearly, the hashing method and design we choose is a central
+            component and will have large ramifications for the rest of the
+            project.  As best we can, we must keep the hashing technique
+            decoupled from the rest of the system in our implementation so as to
+            avoid creating unnecessary work.
 
-    - address space: how large are the hash keys?  128 bits?  160 bits?
-    - What kind of hash function do we use?  Do we use a cryptographically
-      secure hash function such as SHA-1 or SHA-2 or do we use an unsecure hash
-      function?
-    - Do we hash the file's content or the file's name?  If we hash the file
-      name, how do we enforce unique file identifiers?
-    - Any hash function will have collisions.  How do we manage collisions?
-      Do we chain hash contents at the site of storage or do we dissallow
-      colliding files?
-    - Any hash function will have collisions.  How do we manage collisions?
-      Do we chain hash contents at the site of storage or do we dissallow
-      colliding files?
-    - What about the keyspace partitioning?  Is it possible for us to avoid the
-      issue of key-space re-mapping (changing the node location of data) when
-      adding or removing nodes from the network?
-      To better grasp the issue at hand, consider the case where we use a direct
-      hashing method.  If there are n nodes in the system, then we would
-      normally store object o at the node hash(o) mod n.  When someone wanted to
-      look up object o, they would find it at node hash(o) mod n.  However, if a
-      node disappears and the number of active nodes decreases by one, we can no
-      longer find the object o at hash(o) mod n.  The other side of this issue
-      is to address how objects stores at a node which dissappears are remapped
-      to active nodes.
-      - consistent hashing vs rendezvous hashing, both methods of dealing with
-        this possibility.
-    Clearly, the hashing method and design we choose is a central component and
-    will have large ramifications for the rest of the project.  As best we can,
-    we must keep the hashing technique decoupled from the rest of the system in
-    our implementation so as to avoid creating unnecessary work.
+        \item How does a DHT handle node discovery and linkage? Once a file name
+            has been hashed to a node, how do we find that node in the network?
+            There are a myriad of algorithms designed to do just that:
+            Kademlia\cite{kademlia}, Chord\cite{chord}, CAN,
+            Tapestry\cite{tapestry}, and
+            Pastry\cite{pastry}, to name a few.\\
+            Kademlia uses an XOR function on a GUID (per-node unique identifier)
+            to calculate the distance between two nodes, because the XOR
+            satisfies the requirements of an ideal distance function:
+            \begin{itemize}
+                \item The distance from A to itself is 0,
+                \item The distance from A to B is the same as the distance from
+                    B to A, and
+                \item It satisfies the triangle inequality: the sum of the
+                    distance from A to B to C is greater than the distance
+                    between any two of A, B, or C, unless they lie on a line.
+            \end{itemize}
+            Applications using Kademlia or slightly modified version of the
+            Kademlia algorithm include torrent clients such as BitTorrent, other
+            P2P distributed file systems such as IPFS and Gnutella as well as
+            P2P chat, voice, and file-sharing programs like Tox.
+    \end{itemize}
 
-    The second largest concern for a DHT is the node discovery and linkage.
-    Once a file name has been hashed to a node, how do we find that node in the
-    network?  There are a myriad of algorithms designed to do just that:
-    Chord vs CAN vs Tapestry vs Pastry
-    - all examples of DHT protocols.  How does Kademlia tie into these?
-    - Chord itself appears to be a protocol for node discovery and linkage.
-      \url{(https://en.wikipedia.org/wiki/Chord_(peer-to-peer))}
-      \url{(https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf)}
-    - Kademlia uses an XOR function on a GUID (per-node unique identifier) to
-      calculate the distance between two nodes, because the XOR satisfies the
-      requirements of an ideal distance function:
-      - the distance from A to itself is 0
-      - The distance from A to B is the same as the distance from B to A
-      - It satisfies the triangle inequality: that the sum of the distance from
-        A to B to C must be greater than the distance between any two of them,
-        unless they lie on a line.
-      \url{(https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf)}
-      Applications using Kademlia or slightly modified version of the Kademlia
-      algorithm include torrent clients such as BitTorrent, other P2P
-      distributed file systems such as IPFS and Gnutella as well as P2P chat,
-      voice, and file-sharing programs like Tox.
+    Please see the bibliography for additional reading.
 	
-	\begin{thebibliography}{1}
-		\bibitem{am335x_ref}
-		\textbf{Texas Instruments AM335x processor Technical Reference}\\
-            This will serve as a primary technical reference.
+	\begin{thebibliography}{8}
+		\bibitem{ipfs-site}
+            \textbf{\url{https://ipfs.io/}}\\
+            The official site of the IPFS project.
+		\bibitem{tox-site}
+            \textbf{\url{https://tox.chat/}}\\
+            The official site of the Tox project.
+		\bibitem{bittorrent-wiki}
+            \textbf{\url{https://en.wikipedia.org/wiki/BitTorrent}}\\
+            The BitTorrent wiki article (sorry.)
+		\bibitem{ethereum-rlp}
+            \textbf{\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}}\\
+            A reference file on the ethereum github.
+		\bibitem{distributed-social-networks}
+            \textbf{\url{https://arxiv.org/pdf/1508.05591.pdf}}\\
+            An article on the use of DHTs for distributed social network
+            implementations.
+		\bibitem{kademlia}
+		    \textbf{\url{https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf}}\\
+            The original \textbf{Kademlia} algorithm paper.
+		\bibitem{chord}
+	    	\textbf{\url{https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf}}\\
+            A paper on the DHT protocol \textbf{Chord}.
+		\bibitem{tapestry}
+	    	\textbf{\url{http://www.srhea.net/papers/tapestry_jsac.pdf}}\\
+            A paper on the p2p overlay message routing algorithm \textbf{Tapestry}.
+		\bibitem{pastry}
+	    	\textbf{\url{https://www.cs.rice.edu/~druschel/publications/Pastry.pdf}}\\
+            A protocol for internet overlay (overweb) object location and
+            routing in potentially very large WANs.
+        \bibitem{medium}
+	    	\textbf{\url{chor://medium.com/karachain/peer-to-peer-protocols-explained-3b1d947c4600}}\\
+            An pop-science article on peer-to-peer protocols.
 	\end{thebibliography}
 \end{document}
