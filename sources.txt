@@ -1,2 +1,5 @@
 Kademlia implementation specification:
 http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html
+
+implementation in Python
+https://github.com/bmuller/kademlia/blob/master/kademlia/network.py
