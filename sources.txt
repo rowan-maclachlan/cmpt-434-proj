@@ -1,0 +1,2 @@
+Kademlia implementation specification:
+http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html
