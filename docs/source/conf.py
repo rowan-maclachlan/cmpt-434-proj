@@ -12,9 +12,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../kademlia'))
 
 
 # -- Project information -----------------------------------------------------
@@ -45,7 +45,14 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinx.ext.autodoc', # For automodule
+    # For creating documentation from numpy-style docstrings
+    'sphinx.ext.napoleon' 
 ]
+ 
+napoleon_google_docstring = False # Not google, numpy
+napoleon_use_param = False
+napoleon_use_ivar = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -54,7 +61,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.txt'
+source_suffix = [ '.txt', '.md' ]
 
 # The master toctree document.
 master_doc = 'index'
@@ -64,7 +71,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = None 
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
