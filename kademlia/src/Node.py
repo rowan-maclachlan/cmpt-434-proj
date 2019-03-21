@@ -1,6 +1,6 @@
 import params as p
 import hashing as hashing
-import Bucket
+import KBucket
 
 class Node:
     """ 

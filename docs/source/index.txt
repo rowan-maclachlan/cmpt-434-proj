@@ -13,7 +13,16 @@ Welcome to cmpt-434-dht's documentation!
 .. automodule:: params
     :members:
 
+.. automodule:: hashing
+    :members:
+
 .. automodule:: Node 
+    :members:
+
+.. automodule:: Contact 
+    :members:
+
+.. automodule:: KBucket 
     :members:
 
 Indices and tables

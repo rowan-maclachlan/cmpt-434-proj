@@ -1,5 +1,4 @@
 import params as p
-import numpy as np
 import Contact
 
 class KBucket:
