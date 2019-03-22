@@ -1,25 +1,35 @@
+import hashlib
+import params as p
 """
 See https://docs.python.org/3/library/hashlib.html on hashing in Python
 """
-import hashlib
-import params as p
+
+def get_mask():
+    """
+    Get a mask of B bits.
+    """
+    return (1 << p.params[p.B]) - 1
 
 def hash_function(data):
     """
     Hash the data to a byte array of length p.params[B] / 8
-    TODO: How do we draw this down to the length of B?
 
-    data : str
+    TODO: How do we truncate this large integer?  mod?  or mask?
+        what would we mod by?
+
+    data : binary data
     
-    str 
+    int 
         A hash of length p.params[B] / 8 in hexadecimal string form.
     """
-    return hashlib.sha1(data).hexdigest()
+        
+    return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
 
 def new_id(host, port):
     """ 
     Create a new Node hash ID by hashing.
-    TODO: Does this need to be random or can it be based on node ID?
+    TODO: Does this need to be random or can it be based on node ID?  IP and
+    port number?
 
     host : str
         The Node hostname
@@ -29,4 +39,4 @@ def new_id(host, port):
     str 
         A hash of length p.params[B] / 8 in hexadecimal string form.
     """
-    return hashlib.sha1(host + port).hexdigest()
+    return int(hashlib.sha1(host + port).hexdigest(), 16) & get_mask()

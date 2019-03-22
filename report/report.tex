@@ -16,6 +16,27 @@
 	\texttt{\textcolor{blue}{#1}}%
 }
 \geometry{top=1.0in, bottom=1.0in, left=1.0in, right=1.0in}
+% Listings to show code snippets in the report
+\usepackage{listings}
+% Use as `\begin{lstlisting}...\end{lstlisting}`
+\lstdefinestyle{custom}{ 
+    language=Python,
+    basicstyle=\small,
+    breaklines=true,
+    frame=single,
+    numbers=none,
+    tabsize=2, 
+    showspaces=false,
+    showstringspaces=false,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{purple!40!black},
+    identifierstyle=\color{black},
+    stringstyle=\color{orange},
+}
+\lstset{aboveskip=10pt,belowskip=10pt}
+\lstset{style=custom}
+% For inline code snippets.  use `\code{var = "Hello!"}`
+\definecolor{codegray}{gray}{0.9}
 
 \usepackage{indentfirst} % Indent the first paragraph after section headings
 \setlength{\parskip}{1em} % Set inter-paragraph spacing
@@ -23,8 +44,8 @@
 \usepackage{titlesec}
 \usepackage{etoolbox}
 \makeatletter
-\patchcmd{\thebibliography}{%
-    \chapter*{\bibname}\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}{%
+\patchcmd{\thebibliography}{
+    \chapter*{\bibname}\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}{
     \section{References}}{}{}
 \makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,6 +185,35 @@
                 As described on the asyncio Read-The-Docs page: "asyncio is
                 often a perfect fit for IO-bound and high-level structured
                 network code." This is exactly the Kademlia use-case.
+
+            \subsubsection{hashing}
+                Kademlia specifies the use of the 160-bit SHA-1 hash for data,
+                and 160-bit node IDs and 160 k-buckets, to accompany that.
+                This parameter of ID and hash length, however, is not mandated.
+                The python library hashlib provides an array of hashing
+                functions, cryptographic and otherwise, including the SHA-1
+                hash.  This library can be used behind a small wrapper, and
+                hash/ID size can be trimmed to the length specified in the
+                simulation parameters.  This value could initially be set quite
+                small to increase ease-of-testing and provide more
+                comprehensible and tractable output during development stages.
+                It can easily be changed later.
+\begin{lstlisting}[label=hashing.py]
+def hash_function(data):
+    """
+    Hash the data to a byte array of length p.params[B] / 8
+
+    TODO: How do we truncate this large integer?  mod?  or mask?
+        what would we mod by?
+
+    data : binary data
+    
+    int 
+        A hash of length p.params[B] / 8 in hexadecimal string form.
+    """
+        
+    return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
+\end{lstlisting}
 
     \section{Measurements and Criteria}
     As referenced in the implementation plan, there are quantitative
