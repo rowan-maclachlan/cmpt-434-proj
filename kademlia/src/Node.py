@@ -2,7 +2,7 @@ import params as p
 import hashing as hashing
 import KBucket
 
-class Node:
+class Node(object):
     """ 
     class::Node
     """

@@ -1,6 +1,9 @@
-class Contact:
+class Contact(object):
     """ 
     class::Contact
+    A triple of a (big endian) node ID, host, and port for the host.
+    This is the bare minimum of information needed to find another host on the
+    network.
     """
 
     def __init__(self, id, host, port):

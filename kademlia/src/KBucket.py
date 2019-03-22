@@ -1,9 +1,11 @@
 import params as p
 import Contact
 
-class KBucket:
+class KBucket(object):
     """ 
-    class::Bucket
+    class::KBucket
+    Hold a p.params[B] buckets.  Each bucket has a max length of p.params[K].
+    The contents of a bucket are class::Contact.
     """
 
     def __init__(self, b, k):
