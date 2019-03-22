@@ -1,0 +1,293 @@
+\documentclass[12pt]{report}
+\usepackage[T1]{fontenc}  % Font encoding
+\usepackage{mathptmx}     % Choose Times font 
+\usepackage{microtype}    % Improves line breaks      
+\usepackage{blindtext}    % Filler text 
+\usepackage{hyperref}     % for urls with /url{}
+
+%Margin --- 1 inch on all sides
+\usepackage[letterpaper]{geometry} \usepackage{times}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{xparse}
+\usepackage[font=small,labelfont=bf]{caption}
+\NewDocumentCommand{\codeword}{v}{%
+	\texttt{\textcolor{blue}{#1}}%
+}
+\geometry{top=1.0in, bottom=1.0in, left=1.0in, right=1.0in}
+
+\usepackage{indentfirst} % Indent the first paragraph after section headings
+\setlength{\parskip}{1em} % Set inter-paragraph spacing
+\setlength{\parindent}{2em} % Set paragraph indentation
+\usepackage{titlesec}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\thebibliography}{%
+    \chapter*{\bibname}\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}{%
+    \section{References}}{}{}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Title page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+	
+	\titlepage{
+		\vspace*{150px} % Push down title
+		\centering % Centre title
+		{\large \sc A description of project concepts, milestones, and goals\\}
+		\vspace*{30px} % Push down sub text
+		\hrulefill \\
+		\vspace*{20px}
+		{\Huge \uppercase{Project Proposal\\}} % Title
+		\vspace*{20px}
+		\hrulefill \\
+		\vspace*{30px}
+		February 27, 2019\\
+		\vspace*{180px}
+		
+		\raggedright
+		\hfill
+		\textit{CMPT 434: Computer Networks} \\
+		\vspace*{8px}
+	    Christopher	Mykota-Reid
+		\hfill
+		Derek Eager\\
+		Rowan MacLachlan\\
+	}
+	
+	\pagebreak % Put title on its own page
+	
+	\tableofcontents
+	
+	\pagebreak
+	
+    \section{Proposal Requirements:}
+    For an implementation project, you should:
+    \begin{itemize}
+        \item Describe what concept or issue you intend to study. 
+        \item Describe the objectives of your investigation. 
+        \item Give a brief plan of what you will do to investigate the issue. 
+        \item Describe expected measurements or criteria by which you intend to
+            evaluate whether you've succeeded at your objective.
+    \end{itemize}
+
+    \section{Core Concepts}
+    What does peer-to-peer file sharing\cite{bittorrent-wiki}, blockchain,
+    crypto-currencies\cite{ethereum-rlp}, private peer-to-peer voice and text
+    messaging apps\cite{tox-site}, distributed social-media
+    platforms\cite{distributed-social-networks}, and interplanetary internet
+    models\cite{ipfs-site} have in common?  If you guessed: "Well, they all rely
+    upon or implement in some way a distributed data structure to achieve some
+    of their core functionality," you would be correct.  Most of the
+    technologies from the above list implement or utilize a distributed hash
+    table (or a similar distributed data structure, in the case of blockchain).
+    These DHTs are similar in principle to a regular hash table in that they
+    provide the structure for fast retrieval of an object by referencing the
+    location of the object's hash value.  However, a distributed hash table is
+    stored across nodes in a network, and this introduces a variety of
+    complications involving node-lookup (finding the location of the stored data
+    from its hash in the network), ensuring data redundancy (what happens if a
+    node goes offline?), and data retrieval.  Although this technology is not
+    \textit{new} by any standard, its continued use and development in various
+    fields of application makes it a suitable candidate for an implementation
+    project.
+    
+    \section{Objectives}
+    We hope that by implementing a very simple version of a DHT and by demonstrating
+    its use on a small network we will become familiar with the issues
+    overcome by the more large-scale applications of DHTs.  As referenced above,
+    these issues are myriad and often difficult to solve, but not impossible.
+    By implementing an incremental plan to gradually roll out more complex features, new
+    features, or re-implement sub-systems of our application, we will minimize
+    risk so as to end up with a viable end-product for our presentation, while
+    also taking full advantage of every learning opportunity which presents
+    itself.
+
+    \section{Directives}
+    The rough plan for our implementation project will be as follows:
+    \begin{enumerate}
+        \item Collect and collate relevant technical (algorithm descriptions,
+            source-code) and theoretical sources (papers) for the implementation
+            of DHTs.  This has already begun.
+        \item Divide the DHT into aspects.  Identify concerns such as hashing,
+            security, node discovery, redundancy, etc.  This has already begun.
+        \item Once the separate issues and their complexities are understood,
+            design a minimum-viable product for our implementation.  This MVP
+            should be modular and take advantage of as many pre-written
+            libraries as are available, while ignoring any details of a DHT
+            beyond its barest and least robust implementation.  It should also
+            take into consideration the test application we have in
+            mind.\footnote{Although it may not result in the most general
+            implementation, it is more important that the core concepts are
+            applied \textit{successfully} in our particular application.}
+        \item Once the MVP has been designed, identify aspects of it which can
+            be improved.  This will include things such as data redundancy
+            (storing hashed data at multiple nodes), caching, and node
+            deletion and addition (how is content from deleted nodes rehashed,
+            and how is load redistributed on node addition?).
+        \item Implement the MVP, keeping in mind the fact that a
+            modular design will make feature improvement and addition easier
+            than it would be in a poorly constructed monolithic design.
+        \item Once the MVP is implemented and we move onto more advanced
+            features, we have to consider the metrics and factors by which we
+            measure the effectiveness of our implementation.  What are its
+            drawbacks and restrictions?  How efficient is it at finding data on
+            the overweb (participating nodes on the internet)?  How efficiently is
+            data stored and updated?
+    \end{enumerate}
+
+    \section{Implementation}
+        \subsection{High-Level Overview and Tooling}
+            \subsubsection{RPC}
+                The Kademlia paper implies that the protocol is implemented
+                with datagrams\cite{kademlia}.  Typically, clients operating
+                behind a NAT (Network Address Translator) do not need to worry
+                about querying servers outside the NAT, as the Network Address
+                Translator maintains a table correlating incoming messages to
+                hosts on its network.  However, on peer-to-peer systems,
+                clients must also act as servers, and accept requests from
+                other nodes on the overlay network despite being located behind
+                a NAT.  This requires the use of a NAT traversal technique such
+                as Hole-Punching or SOCKS (Socket Secure) to overcome the
+                difficulties inherent in routing requests through NATs.
+                \textbf{TODO:
+                More here on why Kademlia specifies UDP?}  Other Kademlia
+                implementations use a python library asyncio, and while the
+                semantics of asynchronous rpc might make implementation
+                \textit{more} difficult than for a simple synchronous I/O
+                implementation (the python socket module directly, for
+                example), implementing asynchronous UDP RCP with asyncio is
+                very simple.
+
+                As described on the asyncio Read-The-Docs page: "asyncio is
+                often a perfect fit for IO-bound and high-level structured
+                network code." This is exactly the Kademlia use-case.
+
+    \section{Measurements and Criteria}
+    As referenced in the implementation plan, there are quantitative
+    measurements available when considering the success or failure of our
+    implementation.  Comparing these values to those achieved by more mature
+    DHT implementations will provide valuable insight into the challenges posed
+    by DHTs, and should be included in our final report.  However, the most
+    valuable metric will be the realization of a working MVP.  This may be
+    something as simple as the observed and correct distributed storage of one
+    or more files on the personal computers of the researchers (Chris and
+    Rowan) or a more glorious success - or, perhaps, the real success is the
+    friends we made along the way.
+
+    \section{Additional Details}
+    Here, we list some of the technical considerations we will have to resolve
+    in our implementation project:
+    \begin{itemize}
+        \item How many nodes store the data of a single object?  We can start
+            with a single node on a network, but what do we want to achieve?
+            What degree of redundancy can be achieved and what overhead does
+            this add?
+        \item Is an entire object stored on each node, or do we distribute a
+            single object in incomplete parts through the network?
+        \item How large is the address space: how large are the hash keys?  128
+            bits?  160 bits?  We may not need to have a large address space for
+            our implementation, but just what are the consequences of this
+            choice?
+        \item What kind of hash function do we use?  Do we use a
+            cryptographically secure hash function such as SHA-1 or SHA-2 or do
+            we use an unsecure hash function?  What consequences and benefits do
+            different approaches confer?
+        \item Do we hash the object's identifier or the object data?  If we hash
+            the identifier, how do we enforce unique identifiers?
+        \item Any hash function will have collisions.  How do we manage
+            collisions?  Do we chain hash contents at the site of storage or do
+            we dissallow colliding files?
+        \item How does the \textit{CAP} theorem (or \textit{Brewer} Theorem)
+            inform our implementation? What does it mean for it to be impossible
+            for a distributed system to provide all of Consistency,
+            Availability, and Partition Tolerance?
+        \item What about the keyspace partitioning?  Is it possible for us to
+            avoid the issue of key-space re-mapping (changing the node location
+            of data) when adding or removing nodes from the network?\\
+            To better grasp this issue, consider the case where we use a direct
+            hashing method.  If there are $n$ nodes in the system, then we would
+            normally store object $o$ at the node $hash(o) \pmod n$.  When
+            someone wanted to look up object $o$, they would find it at node
+            $hash(o) \pmod n$.  However, if a node disappears and the number of
+            active nodes decreases by one, we can no longer find the object $o$
+            at $hash(o) \pmod n$.  The other side of this issue is to address how
+            objects stores at a node which dissappears are remapped to active
+            nodes.  Two separate possibilities to resolve this issue are
+            consistent hashing and rendezvous hashing.\\
+            Clearly, the hashing method and design we choose is a central
+            component and will have large ramifications for the rest of the
+            project.  As best we can, we must keep the hashing technique
+            decoupled from the rest of the system in our implementation so as to
+            avoid creating unnecessary work.
+
+        \item How does a DHT handle node discovery and linkage? Once a file name
+            has been hashed to a node, how do we find that node in the network?
+            There are a myriad of algorithms designed to do just that:
+            Kademlia\cite{kademlia}, Chord\cite{chord}, CAN,
+            Tapestry\cite{tapestry}, and
+            Pastry\cite{pastry}, to name a few.\\
+            Kademlia uses an XOR function on a GUID (per-node unique identifier)
+            to calculate the distance between two nodes, because the XOR
+            satisfies the requirements of an ideal distance function:
+            \begin{itemize}
+                \item The distance from A to itself is 0,
+                \item The distance from A to B is the same as the distance from
+                    B to A, and
+                \item It satisfies the triangle inequality: the sum of the
+                    distance from A to B to C is greater than the distance
+                    between any two of A, B, or C, unless they lie on a line.
+            \end{itemize}
+            Applications using Kademlia or slightly modified versions of the
+            Kademlia algorithm include torrent clients such as BitTorrent, other
+            P2P distributed file systems such as IPFS and Gnutella as well as
+            P2P chat, voice, and file-sharing programs like Tox.
+    \end{itemize}
+
+    Please see the bibliography for additional reading.
+	
+    \pagebreak
+
+\bibliographystyle{plain}
+\bibliography{bibliography}
+
+	\begin{thebibliography}{10}
+		\bibitem{ipfs-site}
+            \textbf{\url{https://ipfs.io/}}\\
+            The official site of the IPFS project.
+		\bibitem{tox-site}
+            \textbf{\url{https://tox.chat/}}\\
+            The official site of the Tox project.
+		\bibitem{bittorrent-wiki}
+            \textbf{\url{https://en.wikipedia.org/wiki/BitTorrent}}\\
+            The BitTorrent wiki article (sorry.)
+		\bibitem{ethereum-rlp}
+            \textbf{\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}}\\
+            A reference file on the ethereum github.
+		\bibitem{distributed-social-networks}
+            \textbf{\url{https://arxiv.org/pdf/1508.05591.pdf}}\\
+            An article on the use of DHTs for distributed social network
+            implementations.
+		\bibitem{kademlia}
+		    \textbf{\url{https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf}}\\
+            The original \textbf{Kademlia} algorithm paper.
+		\bibitem{chord}
+	    	\textbf{\url{https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf}}\\
+            A paper on the DHT protocol \textbf{Chord}.
+        \bibitem{tapestry}
+	    	\textbf{\url{http://www.srhea.net/papers/tapestry_jsac.pdf}}\\
+            A paper on the p2p overlay message routing algorithm \textbf{Tapestry}.
+        \bibitem{tapestry}
+	    	\textbf{\url{https://people.mpi-sws.org/~gummadi/papers/p2ptechreport.pdf}}\\
+            A measurement study on peer-to-peer file sharing systems.
+		\bibitem{pastry}
+	    	\textbf{\url{https://www.cs.rice.edu/~druschel/publications/Pastry.pdf}}\\
+            A protocol for internet overlay (overweb) object location and
+            routing in potentially very large WANs.
+        \bibitem{medium}
+	    	\textbf{\url{https://medium.com/karachain/peer-to-peer-protocols-explained-3b1d947c4600}}\\
+            An pop-science article on peer-to-peer protocols.
+	\end{thebibliography}
+\end{document}
