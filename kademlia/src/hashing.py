@@ -1,5 +1,7 @@
 import hashlib
-import params as p
+import params as p 
+import random # For random ID generation
+
 """
 See https://docs.python.org/3/library/hashlib.html on hashing in Python
 """
@@ -27,9 +29,7 @@ def hash_function(data):
 
 def new_id(host, port):
     """ 
-    Create a new Node hash ID by hashing.
-    TODO: Does this need to be random or can it be based on node ID?  IP and
-    port number?
+    Create a new Node hash ID by hashing host and port.
 
     host : str
         The Node hostname
@@ -40,3 +40,13 @@ def new_id(host, port):
         A hash of length p.params[B] / 8 in hexadecimal string form.
     """
     return int(hashlib.sha1(host + port).hexdigest(), 16) & get_mask()
+
+def new_id():
+    """ 
+    Create a random new Node ID.
+
+    str 
+        A hash of length p.params[B] / 8 in hexadecimal string form.
+    """
+    return random.randint(0, get_mask())
+
