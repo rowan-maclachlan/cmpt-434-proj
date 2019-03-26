@@ -2,7 +2,6 @@ import asyncio
 from rpcudp.protocol import RPCProtocol
 import sys
 
-
 @asyncio.coroutine
 def sayhi(protocol, address):
     # result will be a tuple - first arg is a boolean indicating whether a

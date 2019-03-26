@@ -4,3 +4,4 @@ http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html
 implementation in Python
 https://github.com/bmuller/kademlia
 https://github.com/isaaczafuta/pydht
+https://github.com/nikhilm/kademlia
