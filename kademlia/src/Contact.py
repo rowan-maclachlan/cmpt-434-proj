@@ -4,6 +4,7 @@ class Contact(object):
     A triple of a (big endian) node ID, host, and port for the host.
     This is the bare minimum of information needed to find another host on the
     network.
+    Implements the comparable interface.
     """
     def __init__(self, id, ip, port):
         """
@@ -16,7 +17,7 @@ class Contact(object):
         """
 
         _dict = {}
-        _dict['id'] = id if id is not None else "UNKNOWN"
+        _dict['id'] = id
         _dict['ip'] = ip
         _dict['port'] = port
 
@@ -35,17 +36,34 @@ class Contact(object):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
-               self._id == other._id and \
-               self._ip == other._ip and \
-               self._port == other._port
+                self.getId() == other.getId()
 
+    def __ne__(self, other):
+        return isinstance(other, self.__class__) and \
+                self.getId() != other.getId()
+
+    def __lt__(self, other):
+        return isinstance(other, self.__class__) and \
+                (self.getId() < other.getId())
+
+    def __le__(self, other):
+        return isinstance(other, self.__class__) and \
+                (self.getId() <= other.getId())
+
+    def __gt__(self, other):
+        return isinstance(other, self.__class__) and \
+                (self.getId() > other.getId())
+
+    def __ge__(self, other):
+        return isinstance(other, self.__class__) and \
+                (self.getId() >= other.getId())
 
     def __hash__(self):
-        return hash((self._id, self._ip, self._port))
+        return self.getId()
 
 
     def __str__(self):
-        return "(" + str(self._id) + "/" + str(self._ip) + "/" + str(self._port) + ")"
+        return "({self.getId()}/{self.getIp()}/{self.getPort()})"
 
 
     def __repr__(self):
