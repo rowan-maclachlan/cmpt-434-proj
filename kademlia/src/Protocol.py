@@ -14,11 +14,11 @@ class Protocol(RPCProtocol):
     Callback methods must be preceded by 'rpc_'
     """
 
-    def __init__(self, source, buckets, data):
+    def __init__(self, source, table, data):
         """
         source : Contact
             This Kademlia Node 
-        buckets : KBucket
+        table : RoutingTable 
             This Kademlia Node's buckets 
         data : {}
             A dictionary in which to store key value pairs
@@ -26,7 +26,7 @@ class Protocol(RPCProtocol):
         """ Who am I in Kademlia? """
         _this_node = source 
         """ My K Buckets """
-        _buckets = buckets 
+        _table = table
         """ Where I store key-value pairs that I'm reponsible for """
         _data = data
 
@@ -137,7 +137,7 @@ class Protocol(RPCProtocol):
         add_new_node(source)
         # TODO find K nearest neighbours of targetId
         # TODO How do we format this response?
-        nearest_neighbours = self._buckets.find_nearest_neighbours(targetId)
+        nearest_neighbours = self._table.find_nearest_neighbours(targetId)
         return nearest_neighbours
 
 
@@ -232,12 +232,12 @@ class Protocol(RPCProtocol):
         if not response[0]:
             log.warning(f"Failed to receive response from node "
                         f"{contact.getId()} at {contact.getIp()}:{contact.getPort(}")
-            # TODO remove contact from buckets
+            # TODO remove contact from my routing table 
             return response
         else:
             log.debug(f"Received response from node {contact.getId()} "
                       f"at {contact.getIp()}:{contact.getPort()}")
-            # TODO update node in buckets
+            # TODO update node in routing table
             return response
 
 

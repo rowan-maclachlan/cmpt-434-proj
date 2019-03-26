@@ -1,7 +1,7 @@
 import params as p
 import hashing as hashing
 import asyncio
-import KBucket
+import RoutingTable 
 import logging
 import Contact
 import Protocol
@@ -20,8 +20,9 @@ class Node(object):
         """
         """ Who am I in Kademlia? """
         _me = Contact(hashing.new_id(), host, port)
+        logging.info(f"Created a new node at {host}:{port} with ID {_me.getId()}")
         """ My K Buckets routing table """
-        _buckets = KBucket(p.params[B], p.params[K])
+        _buckets = RoutingTable(p.params[B], p.params[K])
         """ Where I store key-value pairs that I'm reponsible for """
         _data = {}
         _transport = None

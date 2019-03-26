@@ -2,9 +2,9 @@ import params as p
 import Contact
 import logging as l
 
-class KBucket(object):
+class RoutingTable(object):
     """ 
-    class::KBucket
+    class::RoutingTable
     Hold a p.params[B] buckets.  Each bucket has a max length of p.params[K].
     The contents of a bucket are class::Contact.
     """
@@ -16,7 +16,7 @@ class KBucket(object):
         k : int 
             The number of entries per bucket
         id : int
-            The ID of the Node that has this KBucket
+            The ID of the Node that has this Routing Table 
         """
         _b = b
         _k = k
@@ -38,17 +38,18 @@ class KBucket(object):
         """
         id = contact.getId()
         if id == _id:
-            l.debug("Failed to add ID {} to bucket: cannot add self to bucket".format(id))
+            l.error(f"Failed to add ID {id} to bucket: cannot add self to bucket")
             return false
             
         index = _get_bucket_index(id)
         # If the bucket is full, do nothing
         if len(_buckets[index]) >= p.params[K]:
             # TODO implement proper replacement algorithm
-            l.info("Throwing away contact with ID {}.".format(id))
+            l.info(f"Throwing away contact with ID {id}.")
         else:
             # TODO implement proper replacement algorithm
-            _buckets[index].prepend(contact)
+            l.debug(f"Added contact with ID {id} to bucket {index}")
+            _buckets[index].append(contact)
 
 
     def find_nearest_neighbour(self, id):
@@ -59,6 +60,7 @@ class KBucket(object):
             The digest value for which we want to find the k nearest neighbours
         """
         # TODO implement!
+        # TODO what do we do if we have the contact with ID id?
         return [ Contact(None, None, None) for x in range(_k) ]
 
 
