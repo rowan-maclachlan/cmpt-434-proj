@@ -1,3 +1,5 @@
+import kademlia.hashing as h
+
 class Contact(object):
     """ 
     class::Contact
@@ -8,18 +10,21 @@ class Contact(object):
     """
     def __init__(self, id, ip, port):
         """
-        id : str
-            The hash id of the contact
+        id : int 
+            The hash id of the contact.  If the ID is none, a random hash is
+            created.
         ip : str
             the ip of the contact
         port : str
             The port that the host listens on
         """
 
-        _dict = {}
-        _dict['id'] = id
-        _dict['ip'] = ip
-        _dict['port'] = port
+        self._dict = {}
+        if id is None:
+            id = h.new_id() 
+        self._dict['id'] = id
+        self._dict['ip'] = ip
+        self._dict['port'] = port
 
 
     def getId(self):
@@ -63,8 +68,8 @@ class Contact(object):
 
 
     def __str__(self):
-        return "({self.getId()}/{self.getIp()}/{self.getPort()})"
+        return f"({self.getId()}/{self.getIp()}/{self.getPort()})"
 
 
     def __repr__(self):
-        return str(_dict)
+        return str(self._dict)

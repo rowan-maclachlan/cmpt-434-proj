@@ -1,6 +1,8 @@
-import params as p
-import Contact
 import logging
+
+import kademlia.params as p
+from kademlia.Contact import Contact
+from kademlia.KBucket import KBucket
 
 log = logging.getLogger(__name__)
 
@@ -20,10 +22,10 @@ class RoutingTable(object):
         id : int
             The ID of the Node that has this Routing Table 
         """
-        b = b
-        k = k
-        id = id
-        buckets = [ KBucket(k) for _ in range(b) ]
+        self.b = b
+        self.k = k
+        self.id = id
+        self.buckets = [ KBucket(k) ] * b 
 
     
     def __contains__(self, contact):
@@ -40,7 +42,17 @@ class RoutingTable(object):
         boolean : True if this routing table contains an entry for the contact,
                   and False otherwise.
         """
-        return contact in _get_bucket(contact.getId())
+        return contact in self.get_bucket(contact.getId())
+
+
+    def __str__(self):
+        my_string = ""
+        for i in range(self.b):
+            bucket = self.buckets[i]
+            if len(bucket) > 0:
+                my_string += str(i) + ": " + str(bucket) + '\n'
+        return my_string
+
 
     def add_contact(self, contact):
         """
@@ -59,12 +71,12 @@ class RoutingTable(object):
         """
         id = contact.getId()
         if id == self.id:
-            l.error(f"Failed to add ID {id} to bucket: can't add self to bucket")
+            log.error(f"Failed to add ID {id} to bucket: can't add self to bucket")
             return False
 
-        l.debug(f"Adding contact {id} to this routing table.")
+        log.debug(f"Adding contact {id} to this routing table.")
             
-        return _get_bucket(id).add(contact)
+        return self.get_bucket(id).add(contact)
 
 
     def remove_contact(self, contact):
@@ -82,9 +94,9 @@ class RoutingTable(object):
             Return True if the contact was removed from the routing table, and
             False if the contact was not present in the table.
         """
-        l.debug(f"Removing contact {contact.getId()} from this routing table.")
+        log.debug(f"Removing contact {contact.getId()} from this routing table.")
             
-        return _get_bucket(id).remove(contact)
+        return self.get_bucket(id).remove(contact)
 
 
     def find_nearest_neighbours(self, id):
@@ -115,7 +127,7 @@ class RoutingTable(object):
         return sorted_contacts[:self.k]
 
 
-    def _get_bucket(self, id):
+    def get_bucket(self, id):
         # TODO Can this be implemented better?
         # TODO If an id is different only in the least significant bit, does it
         # belong in bucket [0] or bucket[1]?  This assumes bucket[0] because
@@ -132,8 +144,4 @@ class RoutingTable(object):
 
         return self.buckets[index]
 
-    def __str__(self):
-        my_string = ""
-        for i in range(self.b):
-            my_string += str(self.buckets[i])
-        return my_string
+

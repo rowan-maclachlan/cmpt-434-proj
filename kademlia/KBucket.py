@@ -14,8 +14,8 @@ class KBucket(object):
         k : int 
             The maximum number of elements in this bucket.
         """
-        _k = k
-        contacts = deque(_k)
+        self.k = k
+        self.contacts = deque(maxlen=k)
 
     
     def __contains__(self, contact):
@@ -31,14 +31,17 @@ class KBucket(object):
         ------
         boolean : True if this KBucket contains the contact, and False otherwise.
         """
-        return contact in contacts 
+        return contact in self.contacts 
+
+    def __len__(self):
+        return len(self.contacts)
 
 
     def full(self):
         """
         Return true if this bucket is at capacity.
         """
-        return True if len(contacts) >= contacts.maxlen else False
+        return True if len(self.contacts) >= self.contacts.maxlen else False
 
 
     def add(self, contact):
@@ -57,19 +60,19 @@ class KBucket(object):
         boolean : True if the contact was added to the bucket, and false
             otherwise.
         """
-        if contact in contacts:
+        if contact in self.contacts:
             # If this contact already appears in the list, move it to the back
             # of the list
-            contacts.remove(contact)
-            contacts.append(contact)
+            self.contacts.remove(contact)
+            self.contacts.append(contact)
         elif not self.full():
             # If the contact doesn't appear in the list, append it.
-            contacts.append(contact)
+            self.contacts.append(contact)
         else:
             # If the list is full, remove the oldest contact before appending
             # the new one.
-            contacts.popleft()
-            contacts.append(contact)
+            self.contacts.popleft()
+            self.contacts.append(contact)
         return True
 
 
@@ -88,8 +91,8 @@ class KBucket(object):
         boolean : True if the contact was removed from the bucket, and false
             if they were not in it to begin with.
         """
-        if contact in contacts:
-            contacts.remove(contact)
+        if contact in self.contacts:
+            self.contacts.remove(contact)
             return True
         else:
             return False
@@ -99,7 +102,7 @@ class KBucket(object):
         """
         Get a copy of this buckets entries in sorted order
         """
-        return sorted(contacts)
+        return sorted(self.contacts)
 
 
     def __str__(self):

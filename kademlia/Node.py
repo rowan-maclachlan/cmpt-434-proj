@@ -1,10 +1,11 @@
-import params as p
-import hashing
 import asyncio
-import RoutingTable 
 import logging
-import Contact
-import Protocol
+
+from kademlia.Protocol import Protocol
+from kademlia.RoutingTable import RoutingTable 
+from kademlia.Contact import Contact
+import kademlia.params as p
+import kademlia.hashing as h
 
 log = logging.getLogger(__name__)
 
@@ -22,13 +23,13 @@ class Node(object):
             The port this node will listen for connections on
         """
         """ Who am I in Kademlia? """
-        me = Contact(hashing.new_id(), host, port)
+        self.me = Contact(h.new_id(), host, port)
         """ My K Buckets routing table """ 
-        table = RoutingTable(p.params[B], p.params[K])
+        self.table = RoutingTable(p.params[p.B], p.params[p.K], self.me.getId())
         """ Where I store key-value pairs that I'm responsible for """
-        data = {}
-        _transport = None
-        protocol = None
+        self.data = {}
+        self._transport = None
+        self.protocol = None
 
 
     def _getHost(self):
@@ -74,7 +75,7 @@ class Node(object):
         if type(key) is not str:
             raise TypeError("The key we use MUST be a string!")
 
-        hashkey = hashing.hash_function(key) 
+        hashkey = h.hash_function(key) 
 
         neighbours = self.protocol.table.find_nearest_neighbours(hashkey)
         if len(neighbours) == 0:
@@ -107,7 +108,7 @@ class Node(object):
         """
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
 
-        hashkey = hashing.hash_function(key)
+        hashkey = h.hash_function(key)
 
         if data[hashkey] is not None:
             return data[hashkey]
@@ -134,6 +135,3 @@ class Node(object):
         # TODO perform a search for myself... Do a node find on self.me.getId()
         return await self.protocol.try_find_close_nodes(new_contact, self.me)
 
-
-    def get_routing_table(self):
-        return self.table

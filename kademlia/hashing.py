@@ -1,5 +1,5 @@
 import hashlib
-import params as p 
+import kademlia.params as p 
 import random # For random ID generation
 
 """

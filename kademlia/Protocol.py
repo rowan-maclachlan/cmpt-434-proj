@@ -1,6 +1,6 @@
-from rpcudp.protocol import RPCProtocol
 import asyncio
 import logging
+from rpcudp.protocol import RPCProtocol
 
 log = logging.getLogger(__name__)
 
@@ -25,11 +25,11 @@ class Protocol(RPCProtocol):
             A dictionary in which to store key value pairs
         """
         """ Who am I in Kademlia? """
-        this_node = source 
+        self.this_node = source 
         """ My K Buckets """
-        table = table
+        self.table = table
         """ Where I store key-value pairs that I'm reponsible for """
-        data = data
+        self.data = data
 
 
     def rpc_ping(self, sender, senderId):
@@ -155,10 +155,7 @@ class Protocol(RPCProtocol):
         """
         print(f"Looking for {targetContact} by asking {contact}")
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_close_nodes(\
-                address,\
-                self.this_node.getId(),\
-                targetContact.getId())\
+        response = await self.find_close_nodes(address, self.this_node.getId(), targetContact.getId())
         return self.handle_response(response, contact)
 
 

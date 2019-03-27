@@ -2,7 +2,7 @@ import logging
 import sys
 import asyncio
 
-import kademlia.Node
+from kademlia.Node import Node
 
 if len(sys.argv) != 5:
     print(f"Usage: python3 {sys.argv[0]} <Node IP> <Node port> <bootstrap IP> <bootstrap port>")
@@ -38,19 +38,19 @@ while(1):
     args = input(instructions).split(" ")
 
     try:
-    if args[0] == "get":
-        print(f"do get {args[1]}")
-        print(node.get(args[1]))
-    elif args[0] == "set":
-        print(f"do set {args[1]} {args[2]}")
-        print(node.set(args[1], args[2]))
-    elif args[0] == "inspect":
-        print(node.get_routing_table())
-    elif args[0] == "quit":
-        print("Leaving!")
-        break
-    else:
-        print("Invalid command.  Try again.")
+        if args[0] == "get":
+            print(f"do get {args[1]}")
+            print(node.get(args[1]))
+        elif args[0] == "set":
+            print(f"do set {args[1]} {args[2]}")
+            print(node.set(args[1], args[2]))
+        elif args[0] == "inspect":
+            print(node.get_routing_table())
+        elif args[0] == "quit":
+            print("Leaving!")
+            break
+        else:
+            print("Invalid command.  Try again.")
     except IndexError:
         print("Invalid command.  Try again.")
     except KeyboardInterrupt:
