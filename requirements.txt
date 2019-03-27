@@ -1,5 +1,4 @@
 rpcudp
 sphinx
 asyncio
-hashlib
 pytest
