@@ -197,7 +197,7 @@ class Protocol(RPCProtocol):
             return value 
 
 
-    def try_find_value(self, contact, targetKey):
+    async def try_find_value(self, contact, targetKey):
         """
         Try to find the value associated with targetKey by sending an RPC to the node
         'contact'.
@@ -231,8 +231,10 @@ class Protocol(RPCProtocol):
 
         """
         if not response[0]:
-            log.warning(f"Failed to receive response from node "
-                        f"{contact.getId()} at {contact.getIp()}:{contact.getPort(}")
+            log.warning(f"""
+                    No response from node {contact.getId()}\
+                    at {contact.getIp()}:{contact.getPort()}\
+                    """)
             self.table.remove(contact)
             return response
         else:

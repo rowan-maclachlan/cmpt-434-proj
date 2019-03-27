@@ -1,11 +1,10 @@
 import params as p
-import hashing as hashing
+import hashing
 import asyncio
 import RoutingTable 
 import logging
 import Contact
 import Protocol
-import hashing
 
 log = logging.getLogger(__name__)
 
@@ -13,6 +12,7 @@ class Node(object):
     """ 
     class::Node
     """
+
 
     def __init__(self, host, port):
         """
@@ -29,16 +29,19 @@ class Node(object):
         data = {}
         _transport = None
         protocol = None
-        log.info(f"Created a new node at {host}:{port} with ID {me.getId()}")
+
 
     def _getHost(self):
         return self.me.getHost()
 
+
     def _getPort(self):
         return self.me.getPort()
 
+
     def _createprotocol(self):
         return Protocol(me, table, _data)
+
 
     async def listen(self):
         """
@@ -50,7 +53,7 @@ class Node(object):
         listen = loop.create_datagram_endpoint(
                 self.Protocol, (_getHost(), _getPort()))
 
-        log.info("Listening on {}:{}".format(_getHost(), _getPort()))
+        log.info("Listening on {_getHost()}:{_getPort()}")
 
         self._transport, self.protocol = await listen
         # TODO schedule table refreshing (low priority)
@@ -75,7 +78,7 @@ class Node(object):
 
         # TODO get a list of the nodes we should store this value on.
 
-        return await self.protocol.try_store_value(value):
+        return await self.protocol.try_store_value(value)
 
 
     async def get(self, key):
