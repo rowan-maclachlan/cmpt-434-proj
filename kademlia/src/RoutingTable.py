@@ -23,6 +23,22 @@ class RoutingTable(object):
         id = id
         buckets = [ KBucket(k) for _ in range(b) ]
 
+    
+    def __contains__(self, contact):
+        """
+        Check if this routing table contains an entry for the contact.
+
+        Parameters
+        ----------
+        contact : Contact
+            The contact to look for
+
+        Return
+        ------
+        boolean : True if this routing table contains an entry for the contact,
+                  and False otherwise.
+        """
+        return contact in _get_bucket(contact.getId())
 
     def add_contact(self, contact):
         """
@@ -41,10 +57,10 @@ class RoutingTable(object):
         """
         id = contact.getId()
         if id == self.id:
-            l.error(f"Failed to add ID {id} to bucket: cannot add self to bucket")
+            l.error(f"Failed to add ID {id} to bucket: can't add self to bucket")
             return False
 
-        l.debug(f"Adding contact {id} to the routing table.")
+        l.debug(f"Adding contact {id} to this routing table.")
             
         return _get_bucket(id).add(contact)
 
@@ -64,7 +80,7 @@ class RoutingTable(object):
             Return True if the contact was removed from the routing table, and
             False if the contact was not present in the table.
         """
-        l.debug(f"Removing contact {contact.getId()} from the routing table.")
+        l.debug(f"Removing contact {contact.getId()} from this routing table.")
             
         return _get_bucket(id).remove(contact)
 

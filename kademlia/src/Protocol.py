@@ -246,7 +246,7 @@ class Protocol(RPCProtocol):
         """
         Add this contact to our routing table if we do not already know about
         them.  If they are new, pass them all the data we are holding that they
-        aught to hold
+        aught to be holding.
         
         Parameters
         ----------
@@ -262,20 +262,34 @@ class Protocol(RPCProtocol):
         # See Kademlia paper section 2.5 on how to incorporate new nodes.
         # We may have to store all values we have which are closer to the
         # new node than they are to us.
-        log.debug(f"Adding node {contact.getId()} to our routing table.")
+        log.info(f"Adding node {contact.getId()} to our routing table...")
 
         for key, value in self.data:
+            log.debug(f"Consider storing {value}...")
             # find neighbours close to the key value
-            
+            nearest_contacts = self.table.find_nearest_neighbours(key)
             # If there are fewer than k neighbours, store the key-value to the
             # new node
-            
+            if len(nearest_contacts) < self.table.k:
+                log.debug(f"Few contacts, storing data to new contact...")
+                asyncio.ensure_future(self.try_store(contact, key, value))
+                continue
             # If there are k neighbours, only store the key-value if the new
             # node is closer to the key the our neighbour furthest from the
             # key, and if we are closer to the new node than any of our
             # neighbours.
-            # if we should store:
-            #   asyncio.ensure_future(self.try_store(contact, key, value))
+            nearest_contact = nearest_contacts[0]
+            # are we nearer to this key than nearest_contact is?
+            were_nearest = \
+                    self.this_node.distance(contact.getId()) < \
+                    nearest_contact.distance(contact.getId())
+            furthest_contact = nearest_contacts[-1]
+            # Is contact closer to the key than the furthest contact?
+            close_enough_to_store = \
+                    contact.distance(key) < furthest_contact.distance(key) 
+            if close_enough_to_store and were_nearest:
+                log.debug(f"Storing {data} to new contact...")
+                asyncio.ensure_future(self.try_store(contact, key, value))
 
         self.table.add_contact(contact)
 

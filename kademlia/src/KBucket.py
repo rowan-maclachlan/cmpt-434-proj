@@ -16,7 +16,24 @@ class KBucket(object):
         """
         _k = k
         contacts = deque(_k)
+
     
+    def __contains__(self, contact):
+        """
+        Check if this bucket contains an entry for the contact.
+
+        Parameters
+        ----------
+        contact : Contact
+            The contact to look for
+
+        Return
+        ------
+        boolean : True if this KBucket contains the contact, and False otherwise.
+        """
+        return contact in contacts 
+
+
     def full(self):
         """
         Return true if this bucket is at capacity.
