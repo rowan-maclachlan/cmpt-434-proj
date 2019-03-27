@@ -1,4 +1,5 @@
 from rpcudp.protocol import RPCProtocol
+import asyncio
 import logging
 
 log = logging.getLogger(__name__)
@@ -24,11 +25,11 @@ class Protocol(RPCProtocol):
             A dictionary in which to store key value pairs
         """
         """ Who am I in Kademlia? """
-        _this_node = source 
+        this_node = source 
         """ My K Buckets """
-        _table = table
+        table = table
         """ Where I store key-value pairs that I'm reponsible for """
-        _data = data
+        data = data
 
 
     def rpc_ping(self, sender, senderId):
@@ -50,8 +51,8 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_ping: from {senderId} at {sender[0]}:{sender[1]}")
         source = Contact(senderId, sender[0], sender[1])
-        add_new_node(source)
-        return _this_node.getId()
+        handle_node(source)
+        return self.this_node.getId()
     
 
     async def try_ping(self, contact):
@@ -64,7 +65,7 @@ class Protocol(RPCProtocol):
             The contact we would like to ping
         """
         address = (contact.getIp(), contact.getPort())
-        response = await self.ping(address, _this_node.getId())
+        response = await self.ping(address, self.this_node.getId())
         return self.handle_response(response, contact)
 
     def rpc_store(self, sender, senderId, key, value):
@@ -88,8 +89,8 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(id, sender[0], sender[1])
-        add_new_node(source)
-        data[key] = value
+        handle_node(source)
+        self.data[key] = value
         return True
 
 
@@ -109,7 +110,7 @@ class Protocol(RPCProtocol):
 
         """
         address = (contact.getIp(), contact.getPort())
-        response = await self.store(address, _this_node.getId(), key, value)
+        response = await self.store(address, self.this_node.getId(), key, value)
         return self.handle_response(response, contact)
 
 
@@ -129,15 +130,13 @@ class Protocol(RPCProtocol):
 
         Returns
         -------
-        [Contact] : A list of Contacts 
+        [Contact] : A list of Contacts of up to size K
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
         source = Contact(id, sender[0], sender[1])
-        add_new_node(source)
-        # TODO find K nearest neighbours of targetId
-        # TODO How do we format this response?
-        nearest_neighbours = self._table.find_nearest_neighbours(targetId)
+        handle_node(source)
+        nearest_neighbours = self.table.find_nearest_neighbours(targetId)
         return nearest_neighbours
 
 
@@ -155,7 +154,7 @@ class Protocol(RPCProtocol):
 
         """
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_close_nodes(address, _this_node.getId(),
+        response = await self.find_close_nodes(address, self.this_node.getId(),
                 targetContact.getId())
         return self.handle_response(response, contact)
 
@@ -181,18 +180,20 @@ class Protocol(RPCProtocol):
         Returns
         -------
         TODO how do we format this?
-        [Contact] : A list of Contacts 
+        [Contact], str : A list of Contacts of up to size K, or a value which
+                is the string being sought
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
-        add_new_node(source)
-        value = data[targetKey]
+        handle_node(source)
+        value = self.data[targetKey]
         if value is None:
             # If we do not have the value, return nodes which may have it 
             return self.rpc_find_close_nodes(sender, senderId, targetKey)
         else:
             # If we do have the value, we can return it.
+            # TODO how does rpcudp handle this return value?
             return value 
 
 
@@ -209,7 +210,7 @@ class Protocol(RPCProtocol):
             The key of the value we would like to find 
         """
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_value(address, _this_node.getId(), targetKey)
+        response = await self.find_value(address, self.this_node.getId(), targetKey)
         return self.handle_response(response, contact)
 
 
@@ -232,16 +233,16 @@ class Protocol(RPCProtocol):
         if not response[0]:
             log.warning(f"Failed to receive response from node "
                         f"{contact.getId()} at {contact.getIp()}:{contact.getPort(}")
-            # TODO remove contact from my routing table 
+            self.table.remove(contact)
             return response
         else:
             log.debug(f"Received response from node {contact.getId()} "
                       f"at {contact.getIp()}:{contact.getPort()}")
-            # TODO update node in routing table
+            handle_node(contact)
             return response
 
 
-    def add_new_node(self, contact):
+    def handle_node(self, contact):
         """
         Add this contact to our routing table if we do not already know about
         them.  If they are new, pass them all the data we are holding that they
@@ -255,5 +256,27 @@ class Protocol(RPCProtocol):
         Return : Boolean
             True if they were a new node, and false otherwise
         """
-        # TODO implement!
-        return False
+        if contact in self.table:
+            log.debug(f"Node {contact.getId()} is already in our routing table.")
+            return False
+        # See Kademlia paper section 2.5 on how to incorporate new nodes.
+        # We may have to store all values we have which are closer to the
+        # new node than they are to us.
+        log.debug(f"Adding node {contact.getId()} to our routing table.")
+
+        for key, value in self.data:
+            # find neighbours close to the key value
+            
+            # If there are fewer than k neighbours, store the key-value to the
+            # new node
+            
+            # If there are k neighbours, only store the key-value if the new
+            # node is closer to the key the our neighbour furthest from the
+            # key, and if we are closer to the new node than any of our
+            # neighbours.
+            # if we should store:
+            #   asyncio.ensure_future(self.try_store(contact, key, value))
+
+        self.table.add_contact(contact)
+
+        return True

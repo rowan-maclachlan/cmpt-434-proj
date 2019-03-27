@@ -56,6 +56,28 @@ class KBucket(object):
         return True
 
 
+    def remove(self, contact):
+        """
+        Remove a contact from this bucket.  According to the specifications, we
+        should be replacing this contact from a full K bucket with a backup
+        cache of active contacts.  Just kick it out for now.
+    
+        Parameters
+        ----------
+        contact : Contact
+            The contact to remove from this bucket. 
+        Return
+        ------
+        boolean : True if the contact was removed from the bucket, and false
+            if they were not in it to begin with.
+        """
+        if contact in contacts:
+            contacts.remove(contact)
+            return True
+        else:
+            return False
+
+
     def getSorted(self):
         """
         Get a copy of this buckets entries in sorted order

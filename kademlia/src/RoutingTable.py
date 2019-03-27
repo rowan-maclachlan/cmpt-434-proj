@@ -43,8 +43,30 @@ class RoutingTable(object):
         if id == self.id:
             l.error(f"Failed to add ID {id} to bucket: cannot add self to bucket")
             return False
+
+        l.debug(f"Adding contact {id} to the routing table.")
             
         return _get_bucket(id).add(contact)
+
+
+    def remove_contact(self, contact):
+        """
+        Remove the contact from the routing table.
+
+        Parameters
+        ----------
+        contact : Contact
+            The contact we wish to remove
+
+        Return
+        ------
+        bool
+            Return True if the contact was removed from the routing table, and
+            False if the contact was not present in the table.
+        """
+        l.debug(f"Removing contact {contact.getId()} from the routing table.")
+            
+        return _get_bucket(id).remove(contact)
 
 
     def find_nearest_neighbours(self, id):
@@ -61,10 +83,10 @@ class RoutingTable(object):
 
         Return
         ------
-        [] : A list of Contacts.  These are the K nearest contacts in this
+        [Contact] : A list of Contacts.  These are the K nearest contacts in this
         routing table to the ID provided.
         """
-        # TODO implement!
+        # TODO improve?
         # collect all bucket entries, sort all bucket entries
         nearest_neighbours = []
         # flatten all contacts into one list
@@ -78,7 +100,9 @@ class RoutingTable(object):
     def _get_bucket(self, id):
         # TODO Can this be implemented better?
         # TODO If an id is different only in the least significant bit, does it
-        # belong in bucket [0] or bucket[1]?  This assumes bucket[0]
+        # belong in bucket [0] or bucket[1]?  This assumes bucket[0] because
+        # there's no need for a bucket of this table's node and there wouldn't
+        # be room for the furthest away bucket if there was.
         # Calculate the XOR distance of this bucket with the ID
         distance = id ^ self.id
         index = 0
