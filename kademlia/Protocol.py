@@ -153,9 +153,12 @@ class Protocol(RPCProtocol):
             The contact we would like to find.
 
         """
+        print(f"Looking for {targetContact} by asking {contact}")
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_close_nodes(address, self.this_node.getId(),
-                targetContact.getId())
+        response = await self.find_close_nodes(\
+                address,\
+                self.this_node.getId(),\
+                targetContact.getId())\
         return self.handle_response(response, contact)
 
 

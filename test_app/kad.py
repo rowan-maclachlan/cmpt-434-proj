@@ -40,8 +40,10 @@ while(1):
     try:
     if args[0] == "get":
         print(f"do get {args[1]}")
+        print(node.get(args[1]))
     elif args[0] == "set":
         print(f"do set {args[1]} {args[2]}")
+        print(node.set(args[1], args[2]))
     elif args[0] == "quit":
         print("Leaving!")
         break
@@ -49,7 +51,11 @@ while(1):
         print("Invalid command.  Try again.")
     except IndexError:
         print("Invalid command.  Try again.")
+    except KeyboardInterrupt:
+        print("Leaving!")
+        break
     except Error:
         print("Unknown error.  Kademlia failed.")
 
+server.stop()
 loop.close()

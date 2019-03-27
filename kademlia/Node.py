@@ -43,6 +43,14 @@ class Node(object):
         return Protocol(me, table, _data)
 
 
+    def stop(self):
+        """
+        Close network connections and terminate async loops
+        """
+        if self._transport is not None:
+            self._transport.close()
+
+
     async def listen(self):
         """
         Listen for requests from other nodes
@@ -77,8 +85,9 @@ class Node(object):
             return None
 
         # TODO get a list of the nodes we should store this value on.
-
-        return await self.protocol.try_store_value(value)
+        # TODO this should not be only our known neighbours - we should query
+        # them for closer contacts.
+        return await self.protocol.try_store_value(neighbours[0], hashkey, value)
 
 
     async def get(self, key):
@@ -113,7 +122,6 @@ class Node(object):
         # our key.
             
 
-    
     async def bootstrap(self, ip, port):
         address = (ip, port)
         response = await self.protocol.ping(address, self.me.getId())
@@ -124,11 +132,6 @@ class Node(object):
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
         # TODO perform a search for myself... Do a node find on self.me.getId()
-
-        
-
-
-
-
+        return await self.protocol.try_find_close_nodes(new_contact, self.me)
 
 
