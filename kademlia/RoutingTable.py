@@ -28,6 +28,9 @@ class RoutingTable(object):
         self.buckets = [ KBucket(k) ] * b 
 
     
+    def __len__(self):
+        return sum([ len(b) for b in self.buckets ])
+
     def __contains__(self, contact):
         """
         Check if this routing table contains an entry for the contact.
