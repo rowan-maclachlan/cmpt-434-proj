@@ -68,7 +68,7 @@ class Protocol(RPCProtocol):
         response = await self.ping(address, self.this_node.getId())
         return self.handle_response(response, contact)
 
-    def rpc_store(self, sender, senderId, key, value):
+    def rpc_store_value(self, sender, senderId, key, value):
         """
         Store the value 'value' at key 'key'. 
         
@@ -94,7 +94,7 @@ class Protocol(RPCProtocol):
         return True
 
 
-    async def try_store(self, contact, key, value):
+    async def try_store_value(self, contact, key, value):
         """ 
         Make an RPC to store the value 'value' at key 'key' to the Kademlia
         node 'contact'.
@@ -110,7 +110,7 @@ class Protocol(RPCProtocol):
 
         """
         address = (contact.getIp(), contact.getPort())
-        response = await self.store(address, self.this_node.getId(), key, value)
+        response = await self.store_value(address, self.this_node.getId(), key, value)
         return self.handle_response(response, contact)
 
 

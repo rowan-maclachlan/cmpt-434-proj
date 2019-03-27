@@ -1,6 +1,8 @@
 import params as p
 import Contact
-import logging as l
+import logging
+
+log = logging.getLogger(__name__)
 
 class RoutingTable(object):
     """ 
@@ -108,7 +110,7 @@ class RoutingTable(object):
         # flatten all contacts into one list
         all_contacts = [ el for lst in self.buckets for el in lst.getSorted() ]
         # sort contacts according to distance from ID
-        sorted_contacts = sorted(all_contact, key=(lambda x: x.getId() ^ self.id))
+        sorted_contacts = sorted(all_contact, key=(lambda x: x.getId() ^ id))
         
         return sorted_contacts[:self.k]
 
