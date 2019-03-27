@@ -131,3 +131,9 @@ class RoutingTable(object):
             index += 1
 
         return self.buckets[index]
+
+    def __str__(self):
+        my_string = ""
+        for i in range(self.b):
+            my_string += str(self.buckets[i])
+        return my_string

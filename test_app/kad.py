@@ -44,6 +44,8 @@ while(1):
     elif args[0] == "set":
         print(f"do set {args[1]} {args[2]}")
         print(node.set(args[1], args[2]))
+    elif args[0] == "inspect":
+        print(node.get_routing_table())
     elif args[0] == "quit":
         print("Leaving!")
         break

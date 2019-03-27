@@ -100,3 +100,7 @@ class KBucket(object):
         Get a copy of this buckets entries in sorted order
         """
         return sorted(contacts)
+
+
+    def __str__(self):
+        return str(self.contacts)

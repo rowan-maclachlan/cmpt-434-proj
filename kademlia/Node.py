@@ -135,3 +135,5 @@ class Node(object):
         return await self.protocol.try_find_close_nodes(new_contact, self.me)
 
 
+    def get_routing_table(self):
+        return self.table
