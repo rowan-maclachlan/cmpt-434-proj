@@ -3,10 +3,10 @@ import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../..")
 import pytest
 
-import kademlia.KBucket as KBucket
-import kademlia.RoutingTable as RoutingTable
-import kademlia.params as p
-
+from kademlia.RoutingTable import RoutingTable
+from kademlia.KBucket import KBucket
+from kademlia.Contact import Contact
+import kademlia.params as p 
 
 def test_router_get_bucket():
     b = p.params[p.B]

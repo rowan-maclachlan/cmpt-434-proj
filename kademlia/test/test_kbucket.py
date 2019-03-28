@@ -3,9 +3,9 @@ import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../..")
 import pytest
 
-import kademlia.KBucket as KBucket
-import kademlia.params as p
-
+from kademlia.KBucket import KBucket
+from kademlia.Contact import Contact
+import kademlia.params as p 
 
 def test_kbucket_add_contact():
     b = p.params[p.B]
