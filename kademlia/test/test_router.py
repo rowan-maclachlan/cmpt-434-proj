@@ -53,7 +53,7 @@ def test_router_wont_add_self():
     table = RoutingTable(b, k, 0)
 
     assert not table.add_contact(contact)
-    assert contact1 not in table
+    assert contact not in table
     assert len(table) == 0
 
 

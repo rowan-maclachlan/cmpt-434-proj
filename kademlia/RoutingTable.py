@@ -25,11 +25,12 @@ class RoutingTable(object):
         self.b = b
         self.k = k
         self.id = id
-        self.buckets = [ KBucket(k) ] * b 
+        self.buckets = [ KBucket(k) for _ in range(b) ]
 
     
     def __len__(self):
         return sum([ len(b) for b in self.buckets ])
+
 
     def __contains__(self, contact):
         """
