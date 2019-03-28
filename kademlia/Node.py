@@ -9,25 +9,26 @@ import kademlia.hashing as h
 
 log = logging.getLogger(__name__)
 
-class Node(object):
-    """ 
-    class::Node
+class Node():
+    """
+    The Node object provide the top level interfaces to the Kademlia DHT that
+    an application programmer would use.  After :func:`bootstrapping
+    <bootstrap>` a node, the program can use :func:`get` and :func:`put`
+    commands to interact with the DHT.
+
+    ip : str
+        The IP address this node listens to connections on.
+    port : str
+        The port this node will listen for connections on.
     """
 
-
-    def __init__(self, host, port):
-        """
-        host : str
-            The hostname this node resides on
-        port : str
-            The port this node will listen for connections on
-        """
-        """ Who am I in Kademlia? """
-        self.me = Contact(h.new_id(), host, port)
-        """ My K Buckets routing table """ 
+    def __init__(self, ip, port):
+        self.me = Contact(h.new_id(), ip, port)
+        """ :class:`Contact` : Who am I in Kademlia? """
         self.table = RoutingTable(p.params[p.B], p.params[p.K], self.me.getId())
-        """ Where I store key-value pairs that I'm responsible for """
+        """ :class:`RoutingTable` : My K Buckets routing table """ 
         self.data = {}
+        """ dict{} : Where I store key-value pairs that I'm responsible for """
         self._transport = None
         self.protocol = None
 
@@ -46,7 +47,7 @@ class Node(object):
 
     def stop(self):
         """
-        Close network connections and terminate async loops
+        Close network connections and terminate asyncio loops.
         """
         if self._transport is not None:
             self._transport.close()
@@ -54,7 +55,7 @@ class Node(object):
 
     async def listen(self):
         """
-        Listen for requests from other nodes
+        Listen for requests from other nodes.
         """
         asyncio.get_event_loop()
         
@@ -69,6 +70,20 @@ class Node(object):
         
     
     async def put(self, key, value):
+        """
+        Attempt to store the key:value pair provided onto the DHT.
+
+        Parameters
+        ----------
+        key : str
+            The key you wish to you use store the value at.
+        value : str
+            The value stored on the key.
+    
+        Return
+        ------
+        TODO What do we return here?
+        """
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
@@ -124,6 +139,21 @@ class Node(object):
             
 
     async def bootstrap(self, ip, port):
+        """
+        Bootstrap this node into the Kademlia network of the node at the IP and
+        port provided.
+
+        Parameters
+        ----------
+        ip : str
+            The IP of the bootstrap node on the Kademlia network
+        port : str
+            The port the the bootstrapping node is listening on.
+
+        Return
+        ------
+        None
+        """
         address = (ip, port)
         response = await self.protocol.ping(address, self.me.getId())
         if response[0]:

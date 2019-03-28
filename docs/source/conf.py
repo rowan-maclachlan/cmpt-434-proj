@@ -49,7 +49,8 @@ extensions = [
     # For creating documentation from numpy-style docstrings
     'sphinx.ext.napoleon' 
 ]
- 
+
+autodoc_member_order = 'bysource' # For sorting autodoc output
 napoleon_google_docstring = False # Not google, numpy
 napoleon_use_param = False
 napoleon_use_ivar = True

@@ -1,24 +1,23 @@
 import kademlia.hashing as h
 
-class Contact(object):
+class Contact():
     """ 
-    class::Contact
     A triple of a (big endian) node ID, host, and port for the host.
     This is the bare minimum of information needed to find another host on the
     network.
-    Implements the comparable interface.
-    """
-    def __init__(self, id, ip, port):
-        """
-        id : int 
-            The hash id of the contact.  If the ID is none, a random hash is
-            created.
-        ip : str
-            the ip of the contact
-        port : str
-            The port that the host listens on
-        """
 
+    Parameters
+    ----------
+    id : int 
+        The hash id of the contact.  If the ID is none, a random hash is
+        created.
+    ip : str
+        the ip of the contact
+    port : str
+        The port that the host listens on
+    """
+
+    def __init__(self, id, ip, port):
         self._dict = {}
         if id is None:
             id = h.new_id() 

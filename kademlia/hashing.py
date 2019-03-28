@@ -16,9 +16,6 @@ def hash_function(data):
     """
     Hash the data to a byte array of length p.params[B] / 8
 
-    TODO: How do we truncate this large integer?  mod?  or mask?
-        what would we mod by?
-
     data : binary data
     
     int 

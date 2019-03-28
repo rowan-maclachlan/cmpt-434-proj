@@ -6,24 +6,22 @@ log = logging.getLogger(__name__)
 
 class Protocol(RPCProtocol):
     """ 
-    class::Protocol
-    
     This class defines the callback methods used by rpcudp.  RPCProtocol is a
     small library built on top of asyncio that provides a remote procedure call
     interface over UDP.
-    See https://github.com/bmuller/rpcudp for implementation details.
-    Callback methods must be preceded by 'rpc_'
+    See https://github.com/bmuller/rpcudp for implementation details
+
+    Parameters
+    ----------
+    source : :class:`Contact`
+        This Kademlia Node 
+    table : :class:`RoutingTable`
+        This Kademlia Node's buckets 
+    data : {}
+        A dictionary in which to store key value pairs
     """
 
     def __init__(self, source, table, data):
-        """
-        source : Contact
-            This Kademlia Node 
-        table : RoutingTable 
-            This Kademlia Node's buckets 
-        data : {}
-            A dictionary in which to store key value pairs
-        """
         """ Who am I in Kademlia? """
         self.this_node = source 
         """ My K Buckets """
@@ -37,6 +35,7 @@ class Protocol(RPCProtocol):
         If we recieve this RPC, try to add the sender to our routing table.
         Repond with our ID so that the requestor can update their table with
         us.
+
         Parameters
         ----------
         sender : []
@@ -48,7 +47,6 @@ class Protocol(RPCProtocol):
         --------
         int : The ID of this Kademlia node
         """
-        log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_ping: from {senderId} at {sender[0]}:{sender[1]}")
         source = Contact(senderId, sender[0], sender[1])
         handle_node(source)

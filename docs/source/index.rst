@@ -23,6 +23,8 @@ The formal final project report for this Kademlia implementation can be found
 Kademlia Module
 ===============
 
+.. default-role:: any
+
 .. toctree::
    :maxdepth: 4
 

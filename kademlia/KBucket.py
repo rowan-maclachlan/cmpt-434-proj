@@ -1,26 +1,25 @@
 from collections import deque
 
-class KBucket(object):
+class KBucket():
     """ 
-    class::KBucket
-    Holds Contact elements.  This bucket is initialized with its maximum
-    length.
+    Holds :class:`Contact` elements.  This bucket is initialized with its
+    maximum length, which should correspond to the value of :data:`params.K` in
+    :mod:`params`.
+
+    Parameters
+    ----------
+    k : int 
+        The maximum number of elements in this bucket.
     """
 
     def __init__(self, k):
-        """
-        Parameters
-        ----------
-        k : int 
-            The maximum number of elements in this bucket.
-        """
         self.k = k
         self.contacts = deque(maxlen=k)
 
     
     def __contains__(self, contact):
         """
-        Check if this bucket contains an entry for the contact.
+        Check if this bucket contains an entry for the :class:`contact <Contact>`
 
         Parameters
         ----------
@@ -46,7 +45,7 @@ class KBucket(object):
 
     def add(self, contact):
         """
-        Add a contact to this bucket.  According to the specifications buckets
+        Add a :class:`Contact` to this bucket.  According to the specifications buckets
         should be ordered by least recently seen, except nodes are usually
         pinged to ensure they are still active.  We will just implement LRU for
         now, and kick out old contacts.
@@ -78,7 +77,7 @@ class KBucket(object):
 
     def remove(self, contact):
         """
-        Remove a contact from this bucket.  According to the specifications, we
+        Remove a :class:`Contact` from this bucket.  According to the specifications, we
         should be replacing this contact from a full K bucket with a backup
         cache of active contacts.  Just kick it out for now.
     
@@ -100,7 +99,7 @@ class KBucket(object):
 
     def getSorted(self):
         """
-        Get a copy of this buckets entries in sorted order
+        Get a copy of this bucket's entries in sorted order
         """
         return sorted(self.contacts)
 
