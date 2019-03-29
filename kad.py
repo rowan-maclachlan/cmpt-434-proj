@@ -4,17 +4,25 @@ import asyncio
 
 from kademlia.Node import Node
 
-if len(sys.argv) != 5:
-    print(f"Usage: python3 {sys.argv[0]} <Node IP> <Node port> <bootstrap IP> <bootstrap port>")
+if len(sys.argv) == 3:
+    my_ip = sys.argv[1]
+    my_port = sys.argv[2]
+    boot_ip = None
+    boot_port = None
+    print(f"Launching new Kademlia network on {my_ip}:{my_port}")
 
+elif len(sys.argv) == 5:
+    my_ip = sys.argv[1]
+    my_port = sys.argv[2]
+    boot_ip = sys.argv[3]
+    boot_port = sys.argv[4]
+    print(f"Launching new Kademlia node on {my_ip}:{my_port}"\
+          f" with bootstrapping node {boot_ip}:{boot_port}")
 
-my_ip = sys.argv[1]
-my_port = sys.argv[2]
-boot_ip = sys.argv[3]
-boot_port = sys.argv[4]
-
-print(f"Launching new Kademlia node on {my_ip}:{my_port}"\
-      f" with bootstrapping node {boot_ip}:{boot_port}")
+else:
+    print(f"Usage: python3 {sys.argv[0]} <Node IP> <Node port> "\
+          f"[<bootstrap IP>] [<bootstrap port>]")
+    exit(1)
 
 log = logging.getLogger('kademlia')
 log.setLevel(logging.DEBUG)
@@ -22,9 +30,13 @@ log.setLevel(logging.DEBUG)
 loop = asyncio.get_event_loop()
 loop.set_debug(True)
 
-node = Node(my_ip, port)
-loop.run_until_complete(node.listen(my_port))
-loop.run_until_complete(node.bootstrap(node_ip, node_port))
+# Create Kademlia node
+node = Node(my_ip, my_port)
+
+loop.run_until_complete(node.listen())
+# Bootstrap node if applicable
+if (boot_ip is not None) and (boot_port is not None):
+    loop.run_until_complete(node.bootstrap(boot_ip, boot_port))
 
 print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")

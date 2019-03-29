@@ -21,6 +21,8 @@ class Node():
     port : str
         The port this node will listen for connections on.
     """
+    
+    protocol_class = Protocol 
 
     def __init__(self, ip, port):
         self.me = Contact(h.new_id(), ip, port)
@@ -34,15 +36,22 @@ class Node():
 
 
     def _getHost(self):
-        return self.me.getHost()
+        return self.me.getIp()
 
 
     def _getPort(self):
         return self.me.getPort()
 
 
-    def _createprotocol(self):
-        return Protocol(me, table, _data)
+    def _create_protocol(self):
+        """
+        Most of connection oriented event loop methods (such as
+        loop.create_connection()) usually accept a protocol_factory argument
+        used to create a Protocol object for an accepted connection,
+        represented by a Transport object. Such methods usually return a tuple
+        of (transport, protocol). (asyncio protocol python docs)
+        """
+        return self.protocol_class(self.me, self.table, self.data)
 
 
     def stop(self):
@@ -57,13 +66,15 @@ class Node():
         """
         Listen for requests from other nodes.
         """
-        asyncio.get_event_loop()
+        loop = asyncio.get_event_loop()
         
         # Create endpoint with our Protocol, RPCProtocol and asyncio subclass
+        # See self._create_protocol.  Set optional argument local_addr.
         listen = loop.create_datagram_endpoint(
-                self.Protocol, (_getHost(), _getPort()))
+                self._create_protocol, 
+                local_addr=(self._getHost(), self._getPort()))
 
-        log.info("Listening on {_getHost()}:{_getPort()}")
+        log.info(f"Listening on {self._getHost()}:{self._getPort()}")
 
         self._transport, self.protocol = await listen
         # TODO schedule table refreshing (low priority)
