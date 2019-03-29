@@ -66,6 +66,7 @@ class Protocol(RPCProtocol):
         response = await self.ping(address, self.this_node.getId())
         return self.handle_response(response, contact)
 
+
     def rpc_store_value(self, sender, senderId, key, value):
         """
         Store the value 'value' at key 'key'. 

@@ -92,17 +92,20 @@ class Node():
 
         hashkey = h.hash_function(key) 
 
-        neighbours = self.protocol.table.find_nearest_neighbours(hashkey)
+        neighbours = self.table.find_nearest_neighbours(hashkey)[:self.b]
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
             log.error("This node has no record of any other nodes!")
             log.info("Stored {value} at {self.me.getId()}")
+            data[hashkey] = value
             return None
 
-        # TODO get a list of the nodes we should store this value on.
         # TODO this should not be only our known neighbours - we should query
         # them for closer contacts.
+        # We need to implement the "Node Lookup" portion of the Kademlia
+        # implementation now.
+
         return await self.protocol.try_store_value(neighbours[0], hashkey, value)
 
 
@@ -129,7 +132,7 @@ class Node():
             return data[hashkey]
         
         # Get a list of close nodes in our routing table
-        neighbours = self.protocol.table.find_nearest_neighbours(hashkey)
+        neighbours = self.table.find_nearest_neighbours(hashkey)
         if len(neighbours) == 0:
             log.error("This node has no record of any other nodes!")
             return None
