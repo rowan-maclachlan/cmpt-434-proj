@@ -42,20 +42,28 @@ print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")
 
 command = ""
-instructions = "put <key (str)> <value (str)>\n"\
-               "get <value (str)>\n"\
-               "quit\n"
+instructions = "'put <key (str)> <value (str)>' to store data\n"\
+               "'get <value (str)>' to retrieve data\n"\
+               "'quit' to leave\n"
+
+async def do_get(node, key):
+    result = await node.get(key)
+    print(result[1] if result[0] else "No response received.")
+
+async def do_set(node, key, value):
+    result = await node.put(key, value)
+    print(result[1] if result[0] else "No response received.")
 
 while(1):
-    args = input(instructions).split(" ")
-
     try:
+        args = input(instructions).split(" ")
+
         if args[0] == "get":
-            print(f"do get {args[1]}")
-            print(node.get(args[1]))
+            print(f"do get {args[1]}...")
+            loop.run_until_complete(do_get(node, args[1]))
         elif args[0] == "set":
-            print(f"do set {args[1]} {args[2]}")
-            print(node.set(args[1], args[2]))
+            print(f"do set {args[1]} {args[2]}...")
+            loop.run_until_complete(do_set(node, args[1], args[2]))
         elif args[0] == "inspect":
             print(node.get_routing_table())
         elif args[0] == "quit":
@@ -68,8 +76,6 @@ while(1):
     except KeyboardInterrupt:
         print("Leaving!")
         break
-    except Error:
-        print("Unknown error.  Kademlia failed.")
 
-server.stop()
+node.stop()
 loop.close()
