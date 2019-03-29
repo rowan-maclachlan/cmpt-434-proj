@@ -160,8 +160,9 @@
     \end{enumerate}
 
     \section{Implementation}
+        \subsection{Use}
         \subsection{High-Level Overview and Tooling}
-            \subsubsection{RPC}
+            \subsubsection{RPC library}
                 The Kademlia paper implies that the protocol is implemented
                 with datagrams\cite{kademlia}.  Typically, clients operating
                 behind a NAT (Network Address Translator) do not need to worry
@@ -198,6 +199,15 @@
                 small to increase ease-of-testing and provide more
                 comprehensible and tractable output during development stages.
                 It can easily be changed later.
+            \subsubsection{Routing Table Design}
+            \subsubsection{Bucket Design}
+        \subsection{Kademlia Remote Procedure Calls}
+            \subsubsection{Store}
+            \subsubsection{Find Value}
+            \subsubsection{Find Node}
+            \subsubsection{Ping}
+            \subsubsection{Finding Nodes on the Network}
+
 \begin{lstlisting}[label=hashing.py]
 def hash_function(data):
     """

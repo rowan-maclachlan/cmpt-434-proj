@@ -24,8 +24,19 @@ else:
           f"[<bootstrap IP>] [<bootstrap port>]")
     exit(1)
 
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
 log = logging.getLogger('kademlia')
 log.setLevel(logging.DEBUG)
+log.addHandler(handler)
+logrpc = logging.getLogger('rpcudp')
+logrpc.setLevel(logging.DEBUG)
+logrpc.addHandler(handler)
+logasyncio = logging.getLogger('asyncio')
+logasyncio.setLevel(logging.DEBUG)
+logasyncio.addHandler(handler)
+
 
 loop = asyncio.get_event_loop()
 loop.set_debug(True)

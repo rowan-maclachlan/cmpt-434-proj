@@ -52,6 +52,7 @@ class Protocol(RPCProtocol):
         int : The ID of this Kademlia node
         """
         log.info(f"rpc_ping: from {senderId} at {sender[0]}:{sender[1]}")
+        print("IM HEEEEERE")
         source = Contact(senderId, sender[0], sender[1])
         handle_node(source)
         return self.this_node.getId()
