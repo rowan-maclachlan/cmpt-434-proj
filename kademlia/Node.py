@@ -109,7 +109,7 @@ class Node():
             # we store it locally?
             log.error("This node has no record of any other nodes!")
             log.info("Stored {value} at {self.me.getId()}")
-            data[hashkey] = value
+            self.data[hashkey] = value
             return None
 
         # TODO this should not be only our known neighbours - we should query
@@ -139,8 +139,8 @@ class Node():
 
         hashkey = h.hash_function(key)
 
-        if data[hashkey] is not None:
-            return data[hashkey]
+        if hashkey in self.data:
+            return self.data[hashkey]
         
         # Get a list of close nodes in our routing table
         neighbours = self.table.find_nearest_neighbours(hashkey)
