@@ -16,5 +16,5 @@ loop = asyncio.get_event_loop()
 
 node2.protocol = node2._createprotocol()
 
-loop.run_until_complete(node2.listen())
+transport, porotocol = loop.run_until_complete(node2.listen())
 loop.run_forever()

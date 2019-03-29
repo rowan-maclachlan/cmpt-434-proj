@@ -63,6 +63,12 @@ sufficient.
 """
 T_REPUBLISH = 'tRepublish'
 
+"""
+data::P_TIMEOUT
+pTimeout: the time in seconds that a node waits before timing out on a connection
+"""
+P_TIMEOUT = 'pTimeout'
+
 # No need to do the multi-threaded 'node discover' thing yet
 params[ALPHA] = 1
 # Set this to 16 so that we can actually tractibly think about it at first
@@ -75,4 +81,5 @@ params[T_EXPIRE] = 128 # 86400 in the lit
 params[T_REFRESH] = 64 # 3600 in the lit
 params[T_REPLICATE] = 64 # 3600 in the lit
 params[T_REPUBLISH] = 256 # 86410 in the lit
+params[P_TIMEOUT] = 10
 

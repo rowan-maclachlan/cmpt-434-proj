@@ -103,7 +103,7 @@ class Node():
             log.error("This node has no record of any other nodes!")
             log.info("Stored {value} at {self.me.getId()}")
             return None
-
+        
         # TODO get a list of the nodes we should store this value on.
         # TODO this should not be only our known neighbours - we should query
         # them for closer contacts.

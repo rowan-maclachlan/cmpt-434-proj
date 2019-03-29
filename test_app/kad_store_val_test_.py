@@ -11,7 +11,6 @@ async def put_test():
 	thread1 = asyncio.create_task(node1.put(345, data1))
 	print(asyncio.get_event_loop())
 	await thread1
-	print(node2.data)
 
 node1 = Node('127.0.0.1', 3400) 
 
@@ -25,8 +24,8 @@ data1 = "test data"
 loop = asyncio.get_event_loop()
 loop.set_debug(True)
 
-node1.protocol = node1._createprotocol()
 
-loop.run_until_complete(node1.listen())
+transport, porotocol = loop.run_until_complete(node1.listen())
 	
 asyncio.run(put_test())
+loop.run_forever()

@@ -91,9 +91,8 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(id, sender[0], sender[1])
         self.handle_node(source)
-        print(value)
         self.data[key] = value
-        return True
+        return "stuff"
 
 
     async def try_store_value(self, contact, key, value):
