@@ -66,7 +66,7 @@ class Node():
         # Create endpoint with our Protocol, RPCProtocol and asyncio subclass
         listen = loop.create_datagram_endpoint(
                 self._createprotocol, (self._getHost(), self._getPort()))
-
+        print(self.me.getId())
         log.info("Listening on {_getHost()}:{_getPort()}")
 
         self._transport, self.protocol = await listen
