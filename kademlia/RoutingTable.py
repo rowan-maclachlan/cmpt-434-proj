@@ -128,7 +128,7 @@ class RoutingTable(object):
         # sort contacts according to distance from ID
         sorted_contacts = sorted(all_contacts, key=(lambda x: x.getId() ^ id))
         
-        return self.buckets[0].contacts
+        return sorted_contacts[:self.k] 
 
 
     def get_bucket(self, id):

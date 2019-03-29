@@ -25,7 +25,7 @@ class Node():
     protocol_class = Protocol 
 
     def __init__(self, ip, port):
-        self.me = Contact(h.new_id(), ip, port)
+        self.me = Contact(h.new_id(), ip, int(port))
         """ :class:`Contact` : Who am I in Kademlia? """
         self.table = RoutingTable(p.params[p.B], p.params[p.K], self.me.getId())
         """ :class:`RoutingTable` : My K Buckets routing table """ 
@@ -173,11 +173,12 @@ class Node():
         ------
         None
         """
-        address = (ip, port)
+        address = (ip, int(port))
+        print(address)
         response = await self.protocol.ping(address, self.me.getId())
         if response[0]:
             log.info(f"Bootstrapping off of {ip}:{port}")
-            new_contact = Contact(response[1], ip, port)
+            new_contact = Contact(response[1], ip, int(port))
         else:
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
