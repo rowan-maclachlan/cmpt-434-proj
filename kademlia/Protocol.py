@@ -21,13 +21,15 @@ class Protocol(RPCProtocol):
         A dictionary in which to store key value pairs
     """
 
-    def __init__(self, source, table, data):
+    def __init__(self, source, table, data, waitTimeout=5):
         """ Who am I in Kademlia? """
         self.this_node = source 
         """ My K Buckets """
         self.table = table
         """ Where I store key-value pairs that I'm reponsible for """
         self.data = data
+        self._waitTimeout = waitTimeout
+        self._outstanding = {}
 
 
     def rpc_ping(self, sender, senderId):
@@ -88,7 +90,8 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(id, sender[0], sender[1])
-        handle_node(source)
+        #handle_node(source)
+        print(value)
         self.data[key] = value
         return True
 

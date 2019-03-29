@@ -83,7 +83,7 @@ class RoutingTable(object):
         return self.get_bucket(id).add(contact)
 
 
-    def remove_contact(self, contact):
+    def remove(self, contact):
         """
         Remove the contact from the routing table.
 
@@ -128,7 +128,7 @@ class RoutingTable(object):
         # sort contacts according to distance from ID
         sorted_contacts = sorted(all_contacts, key=(lambda x: x.getId() ^ id))
         
-        return sorted_contacts[:self.k]
+        return self.buckets[0].contacts
 
 
     def get_bucket(self, id):
@@ -138,14 +138,13 @@ class RoutingTable(object):
         # there's no need for a bucket of this table's node and there wouldn't
         # be room for the furthest away bucket if there was.
         # Calculate the XOR distance of this bucket with the ID
-        distance = id ^ self.id
+        distance = self.id ^ id
         index = 0
         while distance > 1:
             # Count the index of the largest bit in the distance
             # The distance will be zero after 'bit' many shifts.
             distance = distance >> 1
             index += 1
-
         return self.buckets[index]
 
 

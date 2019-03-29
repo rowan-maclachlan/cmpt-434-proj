@@ -1,6 +1,6 @@
 import hashlib
-import kademlia.params as p 
 import random # For random ID generation
+import kademlia.params as p 
 
 """
 See https://docs.python.org/3/library/hashlib.html on hashing in Python
