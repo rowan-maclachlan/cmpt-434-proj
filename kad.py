@@ -57,6 +57,10 @@ async def do_set(node, key, value):
     result = await node.put(key, value)
     print(result[1] if result[0] else "No response received.")
 
+async def do_ping(node, ip, port):
+    result = await node.ping(ip, int(port))
+    print(result[1] if result[0] else "No response received.")
+
 while(1):
     try:
         args = input(instructions).split(" ")
@@ -67,8 +71,10 @@ while(1):
         elif args[0] == "set":
             print(f"do set {args[1]} {args[2]}...")
             loop.run_until_complete(do_set(node, args[1], args[2]))
+        elif args[0] == "ping":
+            loop.run_until_complete(do_ping(node, args[1], args[2]))
         elif args[0] == "inspect":
-            print(node.get_routing_table())
+            print(str(node.table))
         elif args[0] == "quit":
             print("Leaving!")
             break

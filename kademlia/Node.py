@@ -106,7 +106,7 @@ class Node():
         # Kademlia spec suggests that we should make calls to 'alpha' node per
         # iteration.  TODO take params out of class and inject them all
         # instead?
-        neighbours = self.table.find_nearest_neighbours(hashkey)
+        neighbours = self.table.find_nearest_neighbours(hashkey)[:p.params[p.ALPHA]]
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
@@ -120,7 +120,6 @@ class Node():
         # We need to implement the "Node Lookup" portion of the Kademlia
         # implementation now.
 
-        neighbours = neighbours[:p.ALPHA]
         return await self.protocol.try_store_value(neighbours[0], hashkey, value)
 
 
@@ -174,7 +173,6 @@ class Node():
         None
         """
         address = (ip, int(port))
-        print(address)
         response = await self.protocol.ping(address, self.me.getId())
         if response[0]:
             log.info(f"Bootstrapping off of {ip}:{port}")
@@ -184,4 +182,10 @@ class Node():
             return
         # TODO perform a search for myself... Do a node find on self.me.getId()
         return await self.protocol.try_find_close_nodes(new_contact, self.me)
+
+
+    async def ping(self, ip, port):
+        address = (ip, int(port))
+        return await self.protocol.ping(address, self.me.getId())
+
 

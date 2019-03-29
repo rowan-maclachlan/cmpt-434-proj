@@ -1,6 +1,8 @@
 import asyncio
 import logging
+
 from rpcudp.protocol import RPCProtocol
+from kademlia.Contact import Contact
 
 log = logging.getLogger(__name__)
 

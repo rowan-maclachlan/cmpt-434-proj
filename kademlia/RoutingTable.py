@@ -146,5 +146,3 @@ class RoutingTable(object):
             distance = distance >> 1
             index += 1
         return self.buckets[index]
-
-
