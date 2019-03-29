@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from rpcudp.protocol import RPCProtocol
+from kademlia.Contact import Contact
 
 log = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(id, sender[0], sender[1])
-        #handle_node(source)
+        self.handle_node(source)
         print(value)
         self.data[key] = value
         return True
@@ -111,6 +112,7 @@ class Protocol(RPCProtocol):
 
         """
         address = (contact.getIp(), contact.getPort())
+        print(address)
         response = await self.store_value(address, self.this_node.getId(), key, value)
         return self.handle_response(response, contact)
 
@@ -136,7 +138,7 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
         source = Contact(id, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
         return nearest_neighbours
 

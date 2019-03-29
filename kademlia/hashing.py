@@ -1,11 +1,8 @@
-import sys
-sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
-
 import hashlib
 import kademlia.params as p 
 import random # For random ID generation
 
-"""
+"""g
 See https://docs.python.org/3/library/hashlib.html on hashing in Python
 """
 
@@ -25,7 +22,7 @@ def hash_function(data):
         A hash of length p.params[B] / 8 in hexadecimal string form.
     """
         
-    return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
+    return int(hashlib.sha1(data.encode()).hexdigest(), 16) & get_mask() 
 
 def new_id(host, port):
     """ 
@@ -39,7 +36,7 @@ def new_id(host, port):
     str 
         A hash of length p.params[B] / 8 in hexadecimal string form.
     """
-    return int(hashlib.sha1(host + port).hexdigest(), 16) & get_mask()
+    return int(hashlib.sha1((host + port).encode()).hexdigest(), 16) & get_mask()
 
 def new_id():
     """ 
