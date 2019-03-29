@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
+
 from collections import deque
 
 class KBucket():

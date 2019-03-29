@@ -1,12 +1,16 @@
+import sys
+sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
+
 import asyncio
 from rpcudp.protocol import RPCProtocol
+
 
 
 class RPCServer(RPCProtocol):
     # Any methods starting with "rpc_" are available to clients.
     def rpc_sayhi(self, sender, name):
         # This could return a Deferred as well. sender is (ip,port)
-        return "Hello %s you live at %s:%i" % (name, sender[0], sender[1])
+        return [1,2,3,4,5]
 
 # start a server on UDP port 1234
 loop = asyncio.get_event_loop()

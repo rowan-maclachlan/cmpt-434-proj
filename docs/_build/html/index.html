@@ -1,0 +1,279 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to cmpt-434-dht’s documentation! &#8212; cmpt-434-dht 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-cmpt-434-dht-s-documentation">
+<h1>Welcome to cmpt-434-dht’s documentation!<a class="headerlink" href="#welcome-to-cmpt-434-dht-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-params"></span><p>module::params
+Store parameters for the application in this file.
+If we do this, parameters for the application can
+be referenced with</p>
+<p>import params as p</p>
+<p>p.params[‘my_param_name’]</p>
+<dl class="data">
+<dt id="params.ALPHA">
+<code class="descclassname">params.</code><code class="descname">ALPHA</code><em class="property"> = 'alpha'</em><a class="headerlink" href="#params.ALPHA" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::B">data::B</a>
+B is the size in bits of the keys used to identify nodes and store and retrieve
+data; in basic Kademlia this is 160, the length of an SHA1 digest (hash).</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.B">
+<code class="descclassname">params.</code><code class="descname">B</code><em class="property"> = 'B'</em><a class="headerlink" href="#params.B" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::K">data::K</a>
+k is the maximum number of contacts stored in a bucket; this is normally 20.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.K">
+<code class="descclassname">params.</code><code class="descname">K</code><em class="property"> = 'k'</em><a class="headerlink" href="#params.K" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::T_EXPIRE">data::T_EXPIRE</a>
+tExpire: the time in seconds after which a key/value pair expires; this is a time-to-live (TTL)
+from the original publication date</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.T_EXPIRE">
+<code class="descclassname">params.</code><code class="descname">T_EXPIRE</code><em class="property"> = 'tExpire'</em><a class="headerlink" href="#params.T_EXPIRE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::T_REFRESH">data::T_REFRESH</a>
+tRefresh: the time in seconds after which an otherwise unaccessed bucket must be refreshed</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.T_REFRESH">
+<code class="descclassname">params.</code><code class="descname">T_REFRESH</code><em class="property"> = 'tRefresh'</em><a class="headerlink" href="#params.T_REFRESH" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::T_REPLICATE">data::T_REPLICATE</a>
+tReplicate: the interval in seconds between Kademlia replication events, when a node is
+required to publish its entire database</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.T_REPLICATE">
+<code class="descclassname">params.</code><code class="descname">T_REPLICATE</code><em class="property"> = 'tReplicate'</em><a class="headerlink" href="#params.T_REPLICATE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::T_REPUBLISH">data::T_REPUBLISH</a>
+tRepublish: the time in seconds after which the original publisher must republish
+a key/value pair.
+NOTE: The fact that tRepublish and tExpire are equal introduces a race
+condition. The STORE for the data being published may arrive at the node just
+after it has been expired, so that it will actually be necessary to put the
+data on the wire. A sensible implementation would have tExpire significantly
+longer than tRepublish. Experience suggests that tExpire=86410 would be
+sufficient.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="params.params">
+<code class="descclassname">params.</code><code class="descname">params</code><em class="property"> = {'B': 16, 'alpha': 1, 'k': 4, 'tExpire': 128, 'tRefresh': 64, 'tReplicate': 64, 'tRepublish': 256}</em><a class="headerlink" href="#params.params" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference external" href="data::ALPHA">data::ALPHA</a>
+A small number representing the degree of parallelism in network calls</p>
+</dd></dl>
+
+<span class="target" id="module-hashing"></span><dl class="function">
+<dt id="hashing.get_mask">
+<code class="descclassname">hashing.</code><code class="descname">get_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hashing.html#get_mask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hashing.get_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mask of B bits.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="hashing.hash_function">
+<code class="descclassname">hashing.</code><code class="descname">hash_function</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hashing.html#hash_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hashing.hash_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash the data to a byte array of length p.params[B] / 8</p>
+<dl class="docutils">
+<dt>TODO: How do we truncate this large integer?  mod?  or mask?</dt>
+<dd>what would we mod by?</dd>
+</dl>
+<p>data : binary data</p>
+<dl class="docutils">
+<dt>int</dt>
+<dd>A hash of length p.params[B] / 8 in hexadecimal string form.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="hashing.new_id">
+<code class="descclassname">hashing.</code><code class="descname">new_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hashing.html#new_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hashing.new_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a random new Node ID.</p>
+<dl class="docutils">
+<dt>str</dt>
+<dd>A hash of length p.params[B] / 8 in hexadecimal string form.</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-Contact"></span><dl class="class">
+<dt id="Contact.Contact">
+<em class="property">class </em><code class="descclassname">Contact.</code><code class="descname">Contact</code><span class="sig-paren">(</span><em>id</em>, <em>ip</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Contact.html#Contact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Contact.Contact" title="Permalink to this definition">¶</a></dt>
+<dd><p>A triple of a (big endian) node ID, host, and port for the host.
+This is the bare minimum of information needed to find another host on the
+network.
+Implements the comparable interface.</p>
+</dd></dl>
+
+<span class="target" id="module-KBucket"></span><dl class="class">
+<dt id="KBucket.KBucket">
+<em class="property">class </em><code class="descclassname">KBucket.</code><code class="descname">KBucket</code><span class="sig-paren">(</span><em>k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KBucket.html#KBucket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KBucket.KBucket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Holds Contact elements.  This bucket is initialized with its maximum
+length.</p>
+<dl class="method">
+<dt id="KBucket.KBucket.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>contact</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KBucket.html#KBucket.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KBucket.KBucket.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a contact to this bucket.  According to the specifications buckets
+should be ordered by least recently seen, except nodes are usually
+pinged to ensure they are still active.  We will just implement LRU for
+now, and kick out old contacts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>contact</strong> (<em>Contact</em>) – The contact to add to the bucket</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>boolean</strong> – otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">True if the contact was added to the bucket, and false</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="KBucket.KBucket.full">
+<code class="descname">full</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/KBucket.html#KBucket.full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KBucket.KBucket.full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if this bucket is at capacity.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="KBucket.KBucket.getSorted">
+<code class="descname">getSorted</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/KBucket.html#KBucket.getSorted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KBucket.KBucket.getSorted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this buckets entries in sorted order</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="KBucket.KBucket.remove">
+<code class="descname">remove</code><span class="sig-paren">(</span><em>contact</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/KBucket.html#KBucket.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#KBucket.KBucket.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a contact from this bucket.  According to the specifications, we
+should be replacing this contact from a full K bucket with a backup
+cache of active contacts.  Just kick it out for now.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>contact</strong> (<em>Contact</em>) – The contact to remove from this bucket.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>boolean</strong> – if they were not in it to begin with.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">True if the contact was removed from the bucket, and false</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">cmpt-434-dht</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Rowan MacLachlan, Chris Mykota-Reed.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

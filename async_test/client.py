@@ -1,6 +1,10 @@
+import sys
+sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
+
 import asyncio
 from rpcudp.protocol import RPCProtocol
-import sys
+
+
 
 @asyncio.coroutine
 def sayhi(protocol, address):
@@ -8,6 +12,10 @@ def sayhi(protocol, address):
     # response was received, and the second argument is the response if one
     #     was received.
     result = yield from protocol.sayhi(address, "Snake Plissken")
+    print(result)
+
+    for i in result[1]:
+    	print(i)
     print(result[1] if result[0] else "No response received.")
     
 # Start local UDP server to be able to handle responses

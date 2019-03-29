@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
+
 import hashlib
 import kademlia.params as p 
 import random # For random ID generation

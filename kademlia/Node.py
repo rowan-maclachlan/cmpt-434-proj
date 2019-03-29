@@ -1,5 +1,9 @@
+import sys
+sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')  
+
 import asyncio
 import logging
+import os
 
 from kademlia.Protocol import Protocol
 from kademlia.RoutingTable import RoutingTable 
@@ -34,7 +38,7 @@ class Node():
 
 
     def _getHost(self):
-        return self.me.getHost()
+        return self.me.getIp()
 
 
     def _getPort(self):
@@ -42,7 +46,7 @@ class Node():
 
 
     def _createprotocol(self):
-        return Protocol(me, table, _data)
+        return Protocol(self.me, self.table, self.data)
 
 
     def stop(self):
@@ -57,11 +61,11 @@ class Node():
         """
         Listen for requests from other nodes.
         """
-        asyncio.get_event_loop()
+        loop = asyncio.get_event_loop()
         
         # Create endpoint with our Protocol, RPCProtocol and asyncio subclass
         listen = loop.create_datagram_endpoint(
-                self.Protocol, (_getHost(), _getPort()))
+                self._createprotocol, (self._getHost(), self._getPort()))
 
         log.info("Listening on {_getHost()}:{_getPort()}")
 
@@ -87,12 +91,12 @@ class Node():
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
-        if type(key) is not str:
-            raise TypeError("The key we use MUST be a string!")
+        #if type(key) is not str:
+        #    raise TypeError("The key we use MUST be a string!")
 
-        hashkey = h.hash_function(key) 
+        #hashkey = h.hash_function(key) 
 
-        neighbours = self.protocol.table.find_nearest_neighbours(hashkey)
+        neighbours = self.protocol.table.find_nearest_neighbours(key)
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
@@ -103,7 +107,7 @@ class Node():
         # TODO get a list of the nodes we should store this value on.
         # TODO this should not be only our known neighbours - we should query
         # them for closer contacts.
-        return await self.protocol.try_store_value(neighbours[0], hashkey, value)
+        return await self.protocol.try_store_value(neighbours[0], key, value)
 
 
     async def get(self, key):

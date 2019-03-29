@@ -44,3 +44,5 @@ def test_kbucket_len():
     assert kbucket.add(contact3)
     assert len(kbucket) == 3
 
+test_kbucket_add_same_contact()
+test_kbucket_len()
