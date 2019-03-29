@@ -42,13 +42,16 @@ print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")
 
 command = ""
-instructions = "'put <key (str)> <value (str)>' to store data\n"\
+instructions = "'set <key (str)> <value (str)>' to store data\n"\
                "'get <value (str)>' to retrieve data\n"\
                "'quit' to leave\n"
 
 async def do_get(node, key):
     result = await node.get(key)
-    print(result[1] if result[0] else "No response received.")
+    if result is None:
+        print("No such key-value exists on the network.")
+    else:
+        print(result[1] if result[0] else "No response received from peers.")
 
 async def do_set(node, key, value):
     result = await node.put(key, value)

@@ -120,7 +120,7 @@ class RoutingTable(object):
         [Contact] : A list of Contacts.  These are the K nearest contacts in this
         routing table to the ID provided.
         """
-        # TODO improve?
+        # TODO improve? Remember that buckets correspond to distance
         # collect all bucket entries, sort all bucket entries
         nearest_neighbours = []
         # flatten all contacts into one list

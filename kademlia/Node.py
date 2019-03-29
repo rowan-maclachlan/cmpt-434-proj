@@ -103,20 +103,24 @@ class Node():
 
         hashkey = h.hash_function(key) 
 
-        neighbours = self.table.find_nearest_neighbours(hashkey)[:self.b]
+        # Kademlia spec suggests that we should make calls to 'alpha' node per
+        # iteration.  TODO take params out of class and inject them all
+        # instead?
+        neighbours = self.table.find_nearest_neighbours(hashkey)
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
             log.error("This node has no record of any other nodes!")
             log.info("Stored {value} at {self.me.getId()}")
             self.data[hashkey] = value
-            return None
-
+            # TODO these reponses need to be unified and formatted the same
+            return [ True, { hashkey : value } ]
         # TODO this should not be only our known neighbours - we should query
         # them for closer contacts.
         # We need to implement the "Node Lookup" portion of the Kademlia
         # implementation now.
 
+        neighbours = neighbours[:p.ALPHA]
         return await self.protocol.try_store_value(neighbours[0], hashkey, value)
 
 
@@ -140,16 +144,17 @@ class Node():
         hashkey = h.hash_function(key)
 
         if hashkey in self.data:
-            return self.data[hashkey]
+            return [ True, self.data[hashkey] ]
         
         # Get a list of close nodes in our routing table
         neighbours = self.table.find_nearest_neighbours(hashkey)
         if len(neighbours) == 0:
             log.error("This node has no record of any other nodes!")
-            return None
+            return [ False, None ]
 
         # TODO we need to successively query nodes we find closer and closer to
         # our key.
+        return [ False, None ]
             
 
     async def bootstrap(self, ip, port):
