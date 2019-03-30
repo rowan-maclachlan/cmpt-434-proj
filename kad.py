@@ -34,20 +34,22 @@ def handle_input(node):
     
     cmd = args[0].rstrip()
     print(f"Attempting to run {cmd}...")
-    if cmd == "get":
-        asyncio.create_task(do_get(node, args[1]))
-    elif cmd == "set":
-        asyncio.create_task(do_set(node, args[1], args[2]))
-    elif cmd == "ping":
-        asyncio.create_task(do_ping(node, args[1], args[2]))
-    elif cmd == "inspect":
-        print("Routing table:")
-        print(str(node.table))
-    elif cmd == "quit":
-        # TODO Actually quit lol
-        print("Leaving!")
-    else:
+    try:
+        if cmd == "get":
+            asyncio.create_task(do_get(node, args[1]))
+        elif cmd == "set":
+            asyncio.create_task(do_set(node, args[1], args[2]))
+        elif cmd == "ping":
+            asyncio.create_task(do_ping(node, args[1], args[2]))
+        elif cmd == "inspect":
+            print("Routing table:")
+            print(str(node.table))
+        elif cmd == "quit":
+            raise KeyboardInterrupt
+    except IndexError:
+        # Handle poorly formed commands
         print("Invalid command.  Try again.")
+
 ################################################################################
 
 if len(sys.argv) == 3:
@@ -99,4 +101,10 @@ if boot_ip is not None and boot_port is not None:
     loop.run_until_complete(node.bootstrap(boot_ip, boot_port))
 prompt()
 loop.add_reader(sys.stdin, handle_input, node)
-loop.run_forever()
+try:
+    loop.run_forever()
+except KeyboardInterrupt:
+    print("Quitting!")
+    node.stop()
+    loop.stop()
+    exit(0)

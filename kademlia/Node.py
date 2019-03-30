@@ -58,6 +58,8 @@ class Node():
         """
         Close network connections and terminate asyncio loops.
         """
+        # TODO close refresh loops here when applicable
+        # TODO but is this really necessary?
         if self._transport is not None:
             self._transport.close()
 
@@ -186,6 +188,11 @@ class Node():
 
     async def ping(self, ip, port):
         address = (ip, int(port))
-        return await self.protocol.ping(address, self.me.getId())
+        response = await self.protocol.ping(address, self.me.getId())
+        if response[0]:
+            # They answered us with their ID...
+            new_contact = Contact(response[1], ip, int(port))
+            # So add they to our table!
+            self.table.add_contact(new_contact)
 
-
+        return response # response is a (true/false ID/None) tuple
