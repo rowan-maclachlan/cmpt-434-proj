@@ -54,7 +54,7 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_ping: from {senderId} at {sender[0]}:{sender[1]}")
         print("IM HEEEEERE")
         source = Contact(senderId, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         return self.this_node.getId()
     
 
@@ -93,7 +93,7 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(id, sender[0], sender[1])
-        #handle_node(source)
+        self.handle_node(source)
         print(value)
         self.data[key] = value
         return True
@@ -140,7 +140,7 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
         source = Contact(id, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
         return nearest_neighbours
 
@@ -191,7 +191,7 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         value = self.data[targetKey]
         if value is None:
             # If we do not have the value, return nodes which may have it 
@@ -245,7 +245,7 @@ class Protocol(RPCProtocol):
         else:
             log.debug(f"Received response from node {contact.getId()} "
                       f"at {contact.getIp()}:{contact.getPort()}")
-            handle_node(contact)
+            self.handle_node(contact)
             return response
 
 
