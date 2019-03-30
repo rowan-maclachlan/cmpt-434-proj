@@ -92,8 +92,11 @@ node = Node(my_ip, my_port)
 print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")
 
-prompt()
 
 loop.run_until_complete(node.listen())
+if boot_ip is not None and boot_port is not None:
+    print("Performing bootstrapping...")
+    loop.run_until_complete(node.bootstrap(boot_ip, boot_port))
+prompt()
 loop.add_reader(sys.stdin, handle_input, node)
 loop.run_forever()
