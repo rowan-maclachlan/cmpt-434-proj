@@ -1,5 +1,6 @@
+import heapq
 import kademlia.hashing as h
-import params as p
+import kademlia.params as p
 from kademlia.utils import distance_to
 
 class Contact():
@@ -101,7 +102,7 @@ class ContactHeap():
         The set of nodes that have already been contacted.
     """
 
-    __init__(self, node_id, maxsize=p.params['k']):
+    def __init__(self, node_id, maxsize=p.params['k']):
         self._node_id = node_id
         """
         """
@@ -111,7 +112,7 @@ class ContactHeap():
         self._heap = []
         """
         """
-        self._contacted = Set()
+        self._contacted = set()
         """
         """
 
@@ -135,7 +136,7 @@ class ContactHeap():
 
         for ell in self._heap:
             if ell not in contacts: 
-                distance = distance_to(self._node_id, ell['id'])
+                distance = distance_to(self._node_id, ell.getId())
                 heapq.heappush(new_heap, (distance, ell))
 
         self._heap = new_heap
@@ -151,12 +152,12 @@ class ContactHeap():
         contact : :class: `Contact`
             The contact to add.
         """
-        if not contact or contact['id'] is self._node_id:
+        if not contact or contact.getId() is self._node_id:
             return
 
-        for ell in contacts:
-            distance = distance_to(self._node_id, ell['id'])
-            heapq.heappush(self._heap, (distance, ell))
+        distance = distance_to(self._node_id, contact.getId())
+        heapq.heappush(self._heap, (distance, contact))
+        
 
     def add(self, contacts):
         """
@@ -168,6 +169,4 @@ class ContactHeap():
             The list of contacts to be added.
         """
         for ell in contacts:
-            if not ell['id'] is self._node_id
-                distance = distance_to(self._node_id, ell['id'])   
-                heapq.heappush(self._heap, (distance, ell))
+            self.push(ell)
