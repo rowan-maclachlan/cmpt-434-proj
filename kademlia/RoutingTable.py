@@ -58,7 +58,7 @@ class RoutingTable(object):
         return my_string
 
 
-    def add_contact(self, contact):
+    def add(self, contact):
         """
         Add the contact to the routing table.
 

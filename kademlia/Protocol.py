@@ -295,6 +295,6 @@ class Protocol(RPCProtocol):
                 log.debug(f"Storing {data} to new contact...")
                 asyncio.ensure_future(self.try_store(contact, key, value))
 
-        self.table.add_contact(contact)
+        self.table.add(contact)
 
         return True
