@@ -18,24 +18,23 @@ class Contact():
     """
 
     def __init__(self, id, ip, port):
-        self._dict = {}
         if id is None:
             id = h.new_id() 
-        self._dict['id'] = id
-        self._dict['ip'] = ip
-        self._dict['port'] = port
+        self._id = id
+        self._ip = ip
+        self._port = port
 
 
     def getId(self):
-        return self._dict['id']
+        return self._id
 
 
     def getIp(self):
-        return self._dict['ip']
+        return self._ip
 
 
     def getPort(self):
-        return self._dict['port']
+        return self._port
 
 
     def __eq__(self, other):
@@ -66,9 +65,13 @@ class Contact():
         return self.getId()
 
 
+    def __iter__(self):
+        return iter([self._id, self._ip, self._port])
+
+
     def __str__(self):
-        return f"({self.getId()}/{self.getIp()}/{self.getPort()})"
+        return f"({self.getId()},{self.getIp()},{self.getPort()})"
 
 
     def __repr__(self):
-        return str(self._dict)
+        return str(self)

@@ -139,8 +139,11 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
+        # TODO Don't return the source itself!
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
-        return nearest_neighbours
+        # Return a list of tuple(Contact) so that pmsgpack can successfully
+        # pack our Contact objects.
+        return list(map(tuple, nearest_neighbours))
 
 
     async def try_find_close_nodes(self, contact, targetContact):

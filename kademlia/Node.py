@@ -126,6 +126,10 @@ class Node():
         return await self.protocol.try_store_value(neighbours[0], hashkey, value)
 
 
+    def tuple_to_contact(self, tuple):
+        return Contact(tuple[0], tuple[1], tuple[2])
+
+
     async def get(self, key):
         """
         Try to retrieve the value keyed on the key from the Kademlia network.
@@ -162,8 +166,9 @@ class Node():
             if isinstance(response[1], str):
                 return response
         else:
-            # We got a list of nodes but no value
-            return [ False, None ]
+            # We got a list of nodes but no value.  Map the returned tuple list
+            # into a list of Contacts
+            return [ False, [ tuple_to_contact(x) for x in response[1:] ] ]
             
 
     async def bootstrap(self, ip, port):
@@ -191,8 +196,11 @@ class Node():
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
         # TODO perform a search for myself... Do a node find on self.me.getId()
-        return await self.protocol.try_find_close_nodes(new_contact, self.me)
-
+        # TODO this is not quite right...  The spec seems to be suggesting
+        # something different than this.
+        response = await self.protocol.try_find_close_nodes(new_contact, self.me)
+        # TODO we need to refresh on contact responses?
+        return response
 
     async def ping(self, ip, port):
         address = (ip, int(port))
@@ -203,4 +211,4 @@ class Node():
             # So add they to our table!
             self.table.add_contact(new_contact)
 
-        return response # response is a (true/false ID/None) tuple
+        return response # response is a (true/false, ID/None) tuple
