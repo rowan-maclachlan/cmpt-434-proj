@@ -80,7 +80,7 @@ class RoutingTable(object):
 
         log.debug(f"Adding contact {id} to this routing table.")
             
-        return self.get_bucket(id).add(contact)
+        return self.get_bucket(contact.getId()).add(contact)
 
 
     def remove(self, contact):
@@ -100,7 +100,7 @@ class RoutingTable(object):
         """
         log.debug(f"Removing contact {contact.getId()} from this routing table.")
             
-        return self.get_bucket(id).remove(contact)
+        return self.get_bucket(contact.getId()).remove(contact)
 
 
     def find_nearest_neighbours(self, id):
@@ -127,7 +127,7 @@ class RoutingTable(object):
         all_contacts = [ el for lst in self.buckets for el in lst.getSorted() ]
         # sort contacts according to distance from ID
         sorted_contacts = sorted(all_contacts, key=(lambda x: x.getId() ^ id))
-        
+        # Retrieve the closest K contacts 
         return sorted_contacts[:self.k] 
 
 

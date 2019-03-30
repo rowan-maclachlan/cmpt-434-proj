@@ -93,7 +93,6 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_store: storing the value {value} at key {key}.")
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
-        print(value)
         self.data[key] = value
         return True
 
@@ -183,9 +182,8 @@ class Protocol(RPCProtocol):
 
         Returns
         -------
-        TODO how do we format this?
-        [Contact], str : A list of Contacts of up to size K, or a value which
-                is the string being sought
+        [Contact], str : A list of Contacts of up to size K, 
+                         the string being sought
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
