@@ -4,6 +4,12 @@ import asyncio
 
 from kademlia.Node import Node
 
+
+def prompt():
+    print("'set <key (str)> <value (str)>' to store data\n"\
+          "'get <value (str)>' to retrieve data\n"\
+          "'quit' to leave\n")
+
 ################################################################################
 async def do_get(node, key):
     result = await node.get(key)
@@ -22,25 +28,23 @@ async def do_ping(node, ip, port):
 
 ################################################################################
 def handle_input(node):
-    command = ""
     args = ""
-    instructions = "'set <key (str)> <value (str)>' to store data\n"\
-                   "'get <value (str)>' to retrieve data\n"\
-                   "'quit' to leave\n"
+    prompt()
     args = sys.stdin.readline().split(" ")
-    loop = asyncio.get_event_loop()
     
-    if args[0] == "get":
-        print(f"do get {args[1]}...")
-        loop.run_until_complete(do_get(node, args[1]))
-    elif args[0] == "set":
-        print(f"do set {args[1]} {args[2]}...")
-        loop.run_until_complete(do_set(node, args[1], args[2]))
-    elif args[0] == "ping":
-        loop.run_until_complete(do_ping(node, args[1], args[2]))
-    elif args[0] == "inspect":
+    cmd = args[0].rstrip()
+    print(f"Attempting to run {cmd}...")
+    if cmd == "get":
+        asyncio.create_task(do_get(node, args[1]))
+    elif cmd == "set":
+        asyncio.create_task(do_set(node, args[1], args[2]))
+    elif cmd == "ping":
+        asyncio.create_task(do_ping(node, args[1], args[2]))
+    elif cmd == "inspect":
+        print("Routing table:")
         print(str(node.table))
-    elif args[0] == "quit":
+    elif cmd == "quit":
+        # TODO Actually quit lol
         print("Leaving!")
     else:
         print("Invalid command.  Try again.")
@@ -88,6 +92,8 @@ node = Node(my_ip, my_port)
 print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")
 
+prompt()
+
 loop.run_until_complete(node.listen())
-loop.add_reader(sys.stdin, handle_input, node, loop)
+loop.add_reader(sys.stdin, handle_input, node)
 loop.run_forever()
