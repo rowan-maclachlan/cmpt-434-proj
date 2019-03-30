@@ -81,5 +81,5 @@ params[T_EXPIRE] = 128 # 86400 in the lit
 params[T_REFRESH] = 64 # 3600 in the lit
 params[T_REPLICATE] = 64 # 3600 in the lit
 params[T_REPUBLISH] = 256 # 86410 in the lit
-params[P_TIMEOUT] = 10
+params[P_TIMEOUT] = 3
 
