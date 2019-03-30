@@ -139,7 +139,7 @@ class Protocol(RPCProtocol):
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
-        source = Contact(id, sender[0], sender[1])
+        source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
         return nearest_neighbours
