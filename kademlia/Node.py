@@ -97,6 +97,7 @@ class Node():
         ------
         TODO What do we return here?
         """
+        # TODO HIGH PRIORITY
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
@@ -113,7 +114,7 @@ class Node():
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
             log.error("This node has no record of any other nodes!")
-            log.info("Stored {value} at {self.me.getId()}")
+            log.info("Stored {value} at node {self.me}")
             self.data[hashkey] = value
             # TODO these reponses need to be unified and formatted the same
             return [ True, { hashkey : value } ]
@@ -140,6 +141,7 @@ class Node():
         ------
         str : The value the key maps to, or None if it is not found.
         """
+        # TODO HIGH PRIORITY
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
 
         hashkey = h.hash_function(key)
@@ -155,7 +157,13 @@ class Node():
 
         # TODO we need to successively query nodes we find closer and closer to
         # our key.
-        return [ False, None ]
+        response = await self.try_find_value(neighbours[0])
+        if response[0]:
+            if isinstance(response[1], str):
+                return response
+        else:
+            # We got a list of nodes but no value
+            return [ False, None ]
             
 
     async def bootstrap(self, ip, port):
@@ -178,7 +186,7 @@ class Node():
         response = await self.protocol.ping(address, self.me.getId())
         if response[0]:
             log.info(f"Bootstrapping off of {ip}:{port}")
-            new_contact = Contact(response[1], ip, int(port))
+            new_contact = Contact(int(response[1]), ip, int(port))
         else:
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
