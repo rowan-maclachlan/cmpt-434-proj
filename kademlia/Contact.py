@@ -141,8 +141,33 @@ class ContactHeap():
         self._heap = new_heap
 
 
+    def push(self, contact):
+        """
+        Pushes the given contact onto the heap as long as the contact isn't the one 
+        for the refernce node_id.
+
+        Parameters
+        ----------
+        contact : :class: `Contact`
+            The contact to add.
+        """
+        if not contact or contact['id'] is self._node_id:
+            return
+
+        for ell in contacts:
+            distance = distance_to(self._node_id, ell['id'])
+            heapq.heappush(self._heap, (distance, ell))
+
     def add(self, contacts):
         """
-        Adds the given contacts to the heap. Contacts can be a single contact or many.
-        
+        Adds a list of contacts to the given heap.
+
+        Parameters
+        ----------
+        contacts : list
+            The list of contacts to be added.
         """
+        for ell in contacts:
+            if not ell['id'] is self._node_id
+                distance = distance_to(self._node_id, ell['id'])   
+                heapq.heappush(self._heap, (distance, ell))

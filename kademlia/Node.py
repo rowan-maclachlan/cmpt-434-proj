@@ -187,5 +187,3 @@ class Node():
     async def ping(self, ip, port):
         address = (ip, int(port))
         return await self.protocol.ping(address, self.me.getId())
-
-
