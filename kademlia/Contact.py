@@ -1,7 +1,12 @@
+import logging
 import heapq
+
 import kademlia.hashing as h
 import kademlia.params as p
 from kademlia.utils import distance_to
+
+log = logging.getLogger(__name__)
+
 
 class Contact():
     """ 
@@ -112,9 +117,6 @@ class ContactHeap():
         self._heap = []
         """
         """
-        self._contacted = set()
-        """
-        """
 
 
     def remove(self, contacts):
@@ -152,14 +154,14 @@ class ContactHeap():
         contact : :class: `Contact`
             The contact to add.
         """
-        if not contact or contact.getId() is self._node_id:
+        if not contact or contact.getId() == self._node_id:
             return
 
         distance = distance_to(self._node_id, contact.getId())
         heapq.heappush(self._heap, (distance, contact))
-        
 
-    def add(self, contacts):
+
+    def push_all(self, contacts):
         """
         Adds a list of contacts to the given heap.
 
@@ -170,3 +172,34 @@ class ContactHeap():
         """
         for ell in contacts:
             self.push(ell)
+
+
+    def pop():
+        """
+        Pops the the heap and returns the contact popped.
+
+        Return
+        ------
+        :class: `Contact` : the popped contact
+        """
+        if not self._heap:
+            log.debug("popped from empty heap")
+            return
+
+        return heapq.heappop(self._heap)
+
+
+    def peek_first(self):
+        """
+        Gets the contact at the top of the heap without popping it off the
+        heap. Works using python's heap invariant so if this isn't working
+        go bug python.
+
+        Return
+        ------
+        :class: `Contact` : the closest contact to the node id
+        """
+        return this._heap[0]
+
+
+    
