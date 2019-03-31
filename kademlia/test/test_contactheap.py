@@ -11,7 +11,7 @@ def test_push(node_id):
 	c3 = Contact(16, '0.0.0.0', 12345)
 	print("c3_id: ", c3.getId())
 	c4 = Contact(32, '0.0.0.0', 12345)
-	print("c4_id: ", c4..getId())
+	print("c4_id: ", c4.getId())
 
 	test_heap = ContactHeap(node_id)
 	test_heap.push(c1)
@@ -23,7 +23,8 @@ def test_push(node_id):
 		print(ell[1].getId())
 	print()
 
-def test_add(node_id):
+
+def test_push_all(node_id):
 	print(f"Running test_add with node_id: {node_id}")
 	contact_list = []
 
@@ -32,7 +33,7 @@ def test_add(node_id):
 		print(f"C{i}: {contact_list[i].getId()}")
 
 	test_heap = ContactHeap(node_id)
-	test_heap.add(contact_list)
+	test_heap.push_all(contact_list)
 
 	for ell in test_heap._heap:
 		print(f"id: {ell[1].getId()} distance: {ell[0]}")
@@ -40,9 +41,15 @@ def test_add(node_id):
 
 
 
+
+"""
+
+	RUNNING TESTS
+
+"""
 test_push(17)
 test_push(32)
 test_push(0)
 
-test_add(0)
-test_add(256)
+test_push_all(0)
+test_push_all(256)
