@@ -175,9 +175,9 @@ class KademliaNodeSearch(KademliaSearch):
 		# return the k closest neighbours of the closest node we found
 		if not finished and (self._contacted.size() >= self._k_val or not any_closer):
 			return await self._protocol.find_close_nodes(self._initiator, self._closest_node)
-		
-		self._closest_node = self._shortlist.peekFirst()
-		return False
+		else:
+			self._closest_node = self._shortlist.peekFirst()
+			return False
 
 
 
@@ -188,6 +188,7 @@ class RPCResponse():
     Parameters
     ----------
     response : tuple
+ 		A tuple of the success/failer of the response and the data received.
     """ 
     __init__(self, response):
         self._response = response
@@ -207,12 +208,3 @@ class RPCResponse():
         Gets the data in the response.
         """
         return self._response[1].values()
-
-    def get_nodes_response(self, node_id):
-        if isinstance(dict, self._response[1]):
-            return self._response[node_id]
-
-
-    def get_sender(self):
-    	return self._response[1].key()
-
