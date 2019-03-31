@@ -8,23 +8,33 @@ from kademlia.Node import Node
 def prompt():
     print("'set <key (str)> <value (str)>' to store data\n"\
           "'get <value (str)>' to retrieve data\n"\
+          "'inspect' to view this node's state\n"
           "'quit' to leave\n")
 
 ################################################################################
 async def do_get(node, key):
     result = await node.get(key)
-    if result is None:
-        print("No such key-value exists on the network.")
+    if result[0] and isinstance(result[1], str):
+        print(f"Found {key}:{result[1]} on the Kademlia network.")
+    elif result[0]:
+        print("Failed to find {key} on the Kademlia network:  Found:\n"\
+                + str(result[1:]))
     else:
-        print(result[1] if result[0] else "No response received from peers.")
+        print(f"No such value for {key} on the Kademlia network.")
 
 async def do_set(node, key, value):
     result = await node.put(key, value)
-    print(result[1] if result[0] else "No response received.")
+    if result[0]:
+        print(f"Stored {key}:{value} on the Kademlia network.")
+    else:
+        print(f"Failed to store {key}:{value} on the Kademlia network.")
 
 async def do_ping(node, ip, port):
     result = await node.ping(ip, int(port))
-    print(result[1] if result[0] else "No response received.")
+    if result[0]:
+        print(f"Received PONG from {result[1]}.")
+    else:
+        print(f"No response received from {ip}:{port}")
 
 ################################################################################
 def handle_input(node):
@@ -42,7 +52,8 @@ def handle_input(node):
         elif cmd == "ping":
             asyncio.create_task(do_ping(node, args[1], args[2]))
         elif cmd == "inspect":
-            print("Routing table:")
+            print(f"Data for this node: {node.data}")
+            print(f"Routing table for {node.me}")
             print(str(node.table))
         elif cmd == "quit":
             raise KeyboardInterrupt
@@ -104,7 +115,7 @@ loop.add_reader(sys.stdin, handle_input, node)
 try:
     loop.run_forever()
 except KeyboardInterrupt:
-    print("Quitting!")
+    print("\nQuitting!")
     node.stop()
     loop.stop()
     exit(0)

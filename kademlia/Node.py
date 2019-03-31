@@ -209,6 +209,6 @@ class Node():
             # They answered us with their ID...
             new_contact = Contact(response[1], ip, int(port))
             # So add they to our table!
-            self.table.add_contact(new_contact)
+            self.table.add(new_contact)
 
         return response # response is a (true/false, ID/None) tuple
