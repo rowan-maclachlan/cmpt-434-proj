@@ -1,3 +1,5 @@
+from kademlia.KademliaSearch import RPCResponse
+
 def distance_to(node1_id, node2_id):
     """
     Gets the distance to node2_id from node1_id.
@@ -16,7 +18,11 @@ def distance_to(node1_id, node2_id):
     return int(node1_id) ^ int(node2_id)
 
 
-async def gather_responses(response_dict):
-    cors = list(response_dict.values())
-    results = away asyncio.gather(*cors)
-    return dict(zip(dict.keys(), results))
+async def gather_responses(query_dict):
+    """
+    Waits runs all RPC calls that are stored in the response_dict and stores
+    there result in along with the sender's ID in a new dict that is returned.
+    """
+    queries = list(query_dict.values())
+    results = await asyncio.gather(*queries)
+    return tuple(zip(dict.keys(), map(RPCResponse, results)))
