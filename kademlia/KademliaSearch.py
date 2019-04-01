@@ -100,20 +100,27 @@ class KademliaSearch():
 		# responses returned were not closer then our closest yet
 		while not self._finished and (self._contaced.size() <= self._k_val)\
 							 and (prev_closest_node is not self._closest_node):
-			prev_closest_node = self._closest_node
-			
 			peers_to_contact = []
-			for i in range(self._alpha):
-				peers_to_contact.append(self._shortlist.pop())
+			if (distance_to(self._target_id, self._closest_node.getId())\
+					 >= distance_to(self._target_id, self._shortlist.peek_first()[1])):
+				self._closest_node = self._shortlist.peek_first()[1]
+
+				for i in range(self._alpha):
+					peers_to_contact.append(self._shortlist.pop())
+			else:
+			 	# if there are no closer nodes we search the nearest k nodes instead of a
+			 	# the nearest alpha 
+			 	for i in range(self._k_val):
+			 		peers_to_contact.append(self._shortlist.pop())
 
 			for peer in peers_to_contact:
 				self._active_queries[peer] = rpc_method(self._initiator, peer.getId()) 
-
 			responses = await gather_responses(self._response_dict)
 			# handles the responses. May terminate the search by setting finished to true,
 			# expanding contacted to be greater than k, or determining no nodes found are
 			# closer than the closest we have found so far
 			result = await self._handle_responses(responses)
+			prev_closest_node = self._closest_node
 
 		return result
 
@@ -161,24 +168,20 @@ class KademliaNodeSearch(KademliaSearch):
 			response = RPCResponse(response)
 			
 			if response.has_happened():
-				vself._contacted.push(sender_info)
+				self._contacted.push(sender_info)
 				self._shortlist.push_all(response.get_data())
 
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
 						self._finished = True
 						#TODO: make sure the nodes are active
-						target_closest = await self._protocol.find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
+						target_closest = await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
 						self._shortlist.push_all(target_closest)
 
 						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
-
-		any_closer = distance_to(self._target_id, self._closest_node.getId())\
-					 >= distance_to(self._target_id, self._shortlist.peekFirst())
-
 		# we failed ~(`-.-`)~ 
 		#TODO: what to return on failure
-		if not finished and (self._contacted.size() >= self._k_val or not any_closer):
+		if not finished and self._contacted.size() >= self._k_val:
 			return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		else:
 			self._closest_node = self._shortlist.peekFirst()[1]
