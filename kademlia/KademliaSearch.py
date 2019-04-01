@@ -11,10 +11,10 @@ log = logging.getLogger(__name__)
 class KademliaSearch():
 	"""
 	The search function used by Kademlia to find nodes in a Kademlia network.
-	Asks the alpha closest nodes for their k closests nodes and then from
-	the received nodes asks the alpha closest nodes for their k closests nodes
-	iteratively until either no closer node is found or the node is found.
-	The other classes in this file will define what is returned.
+	Asks the alpha closest nodes for the k closest nodes for their k closests nodes.
+	Adds the nodes returned to the list of closest nodes and repeats the process
+	until either k nodes have been asked, no closer nodes than the previous closest
+	was returned, or if the node/value was found. 
 
 	Parameters
 	----------
@@ -144,9 +144,7 @@ class KademliaNodeSearch(KademliaSearch):
 	async def _handle_responses(self, responses_to_handle):
 		"""
 		Handles a dictionary of responses. On completion returns a tuple of the success
-		of the search and either the target_id's contact information or returns the closest
-		node to the target_id's contact information. If the search will continue, returns 
-		only True.
+		of the search and the k closest nodes that it has found to the target node.
 
 		Parameters
 		----------
@@ -174,7 +172,7 @@ class KademliaNodeSearch(KademliaSearch):
 					# about adding an active list
 					if peer_info.getId() == self._target_id:
 						self._finished = True
-
+						#TODO: make sure the nodes are active
 						target_closest = await self._protocol.find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
 						self._shortlist.push_all(target_closest)
 
@@ -197,9 +195,9 @@ class KademliaNodeSearch(KademliaSearch):
 
 class KademliaValueSearch(KademliaSearch):
 	"""
-	Finds a node with a value and returns that node. Also performs iterative storing
-	by storing the value on the node on the closest neighbour that didn't return the 
-	value.
+	Finds a node with the value matching the key and returns the value. Also performs 
+	iterative store by storing the value on the node on the closest neighbour that 
+	didn't return the value.
 
 	Attributes
 	----------
@@ -232,9 +230,10 @@ class KademliaValueSearch(KademliaSearch):
 
 	def _handle_responses(self, responses_to_handle):
 		"""
-		Handles the response of the rpc_find_value calls. Ends when k nodes have been 
-		queried, there are no closer nodes returned, or the value is found. Upon
-		completion performs an iterative store on the value.
+		Handles the response of the rpc_find_value calls. Upon completion performs an 
+		iterative store on the value and the closest node that did not send us the value.
+		Returns the success and either a list of k closest nodes to the key or the value that
+		matches the key.
 
 		Parameters
 		----------
@@ -242,7 +241,9 @@ class KademliaValueSearch(KademliaSearch):
 
 		Returns
 		-------
-		
+		(success, data) : tuple
+			Whether the search was succesful and either the value if it was 
+			found or a list of k closest nodes if the value was not found.
 		"""
 		newly_contacted = []
 		values_found = []
@@ -251,10 +252,9 @@ class KademliaValueSearch(KademliaSearch):
 			response = RPCValueResponse(info)
 
 			if response.has_happened():
-				newly_contacted.append(sender_id)
+				newly_contacted.append(sender_info)
 
 				if response.found_value():
-					self._values_received_from
 					values_found.append(response.get_data())
 				else:
 					self._shortlist.push_all(response.get_data())
@@ -264,7 +264,7 @@ class KademliaValueSearch(KademliaSearch):
 
 		# if the value is found perform an iterative store if possible and return the value
 		if values_found:
-			value = values_found[self._target_id]
+			value = values_found[0][self._target_id]
 			self._finished = True
 
 			if self._iterative_store_candidate:
@@ -277,6 +277,8 @@ class KademliaValueSearch(KademliaSearch):
 		# search failed
 		if self._finished and (self._contacted.size() >= k or not any_closer):
 			return (False, merge_heaps(self._contacted, self._shortlist))
+		# continue
+		return None
 
 
 
@@ -298,7 +300,7 @@ class RPCResponse():
 
     def has_happened(self):
         """
-        Returns if the response happend or timed out.
+        Returns true if there was a response, false otherwise.
         """
         return self._response[0]
 
@@ -314,7 +316,7 @@ class RPCResponse():
 class RPCValueResponse(RPCResponse):
 	"""
 	A wrapper for a response from a rpc_find_value call. Adds a found_value method
-	that checks if a value is in the response.
+	that checks if a value is in the response to the RPCResponse.
 	"""
 	def __init__(self, response):
 		RPCResponse.__init__(self, response)
