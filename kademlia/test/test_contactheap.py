@@ -1,9 +1,9 @@
 import sys
-sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../..")
 from kademlia.Contact import *
 
-def test_push(node_id):
-	print(f"Running test_push with node_id: {node_id}")
+def test_push():
 	c1 = Contact(4, '0.0.0.0', 12345)
 	print("c1_id: ", c1.getId())
 	c2 = Contact(8, '0.0.0.0', 12345)
@@ -13,7 +13,7 @@ def test_push(node_id):
 	c4 = Contact(32, '0.0.0.0', 12345)
 	print("c4_id: ", c4.getId())
 
-	test_heap = ContactHeap(node_id)
+	test_heap = ContactHeap(17)
 	test_heap.push(c1)
 	test_heap.push(c2)
 	test_heap.push(c3)
@@ -24,15 +24,14 @@ def test_push(node_id):
 	print()
 
 
-def test_push_all(node_id):
-	print(f"Running test_add with node_id: {node_id}")
+def test_push_all():
 	contact_list = []
 
 	for i in range(10):
 		contact_list.append(Contact(pow(2, i), '0.0.0.0', 1245))
 		print(f"C{i}: {contact_list[i].getId()}")
 
-	test_heap = ContactHeap(node_id)
+	test_heap = ContactHeap(0)
 	test_heap.push_all(contact_list)
 
 	for ell in test_heap._heap:
@@ -61,18 +60,3 @@ def test_contains():
 	print("success")
 	print()
 
-
-
-"""
-
-	RUNNING TESTS
-
-"""
-test_push(17)
-test_push(32)
-test_push(0)
-
-test_push_all(0)
-test_push_all(256)
-
-test_contains()
