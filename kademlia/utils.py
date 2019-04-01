@@ -23,7 +23,7 @@ async def gather_responses(query_dict):
     """
     queries = list(query_dict.values())
     results = await asyncio.gather(*queries)
-    return tuple(zip(dict.keys(), map(RPCResponse, results)))
+    return tuple(zip(dict.keys(),  results))
 
 
 def merge_heaps(heap1, heap2, len):

@@ -198,21 +198,21 @@ class ContactHeap():
             log.debug("popped from empty heap")
             return
 
-        popped_contact = heapq.heappop(self._heap)
+        popped_contact = heapq.heappop(self._heap)[1]
         del self._node_dict[popped_contact.getId()]
 
-        return popped_contact
+        return popped_contact[1]
 
 
     def peek_first(self):
         """
         Gets the contact at the top of the heap without popping it off the
-        heap. Works using python's heap invariant so if this isn't working
-        go bug python.
+        heap. Note: unlike pop, which only returns the contact, this gives the tuple
+        of (distance, contact) so that comparisons can be made more easily.
 
         Return
         ------
-        :class: `Contact` : the closest contact to the node id
+        tuple : the distance and the closest contact to the node id
         """
         return this._heap[0]
 
@@ -234,3 +234,14 @@ class ContactHeap():
             return True
         else:
             return False
+
+    
+    def size(self):
+        """
+        Gets the number of ellements in the heap.
+
+        Returns
+        -------
+        numEll : int
+        """
+        return self._heap.size()
