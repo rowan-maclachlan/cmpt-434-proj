@@ -279,7 +279,8 @@ class Protocol(RPCProtocol):
             # new node
             if len(nearest_contacts) < self.table.k:
                 log.debug(f"Few contacts, storing data to new contact...")
-                asyncio.ensure_future(self.try_store(contact, key, value))
+                # schedule the task in the event loop, continue to next data
+                asyncio.create_task(self.try_store(contact, key, value))
                 continue
             # If there are k neighbours, only store the key-value if the new
             # node is closer to the key the our neighbour furthest from the

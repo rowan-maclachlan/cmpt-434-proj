@@ -67,11 +67,20 @@ class Node():
     async def listen(self):
         """
         Listen for requests from other nodes.
+
+        Transports and Protocols are used by the low-level event loop APIs such
+        as loop.create_connection(). They use callback-based programming style
+        and enable high-performance implementations of network or IPC protocols
+        (e.g. HTTP).
         """
         loop = asyncio.get_event_loop()
         
         # Create endpoint with our Protocol, RPCProtocol and asyncio subclass
         # See self._create_protocol.  Set optional argument local_addr.
+        # self._create_protocol must be a callable returning a protocol
+        # implementation.
+        # local_addr is used to bind the socket to locally. The local_host and
+        # local_port are looked up using getaddrinfo().
         listen = loop.create_datagram_endpoint(
                 self._create_protocol, 
                 local_addr=(self._getHost(), self._getPort()))
