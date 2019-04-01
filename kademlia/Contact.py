@@ -153,7 +153,7 @@ class ContactHeap():
     def push(self, contact):
         """
         Pushes the given contact onto the heap as long as the contact isn't the one 
-        for the refernce node_id.
+        for the reference node_id or already in the heap.
 
         Parameters
         ----------

@@ -14,7 +14,7 @@ class KademliaSearch():
 	Asks the alpha closest nodes for their k closests nodes and then from
 	the received nodes asks the alpha closest nodes for their k closests nodes
 	iteratively until either no closer node is found or the node is found.
-	The other classes in this file will define what it returned.
+	The other classes in this file will define what is returned.
 
 	Parameters
 	----------
@@ -81,6 +81,7 @@ class KademliaSearch():
 		self._active_queries = {}
 		"""
 		"""
+		self._finished = False
 
 
 	async def _search(self, rpc_method):
@@ -94,11 +95,10 @@ class KademliaSearch():
 			The method used to find nodes.
 		""" 
 		prev_closest_node = None
-		finished = False
 
 		# loop until we have found the node, we have queried k nodes or all
 		# responses returned were not closer then our closest yet
-		while not finished and (self._contaced.size() <= self._k_val)\
+		while not self._finished and (self._contaced.size() <= self._k_val)\
 							 and (prev_closest_node is not self._closest_node):
 			prev_closest_node = self._closest_node
 			
@@ -155,7 +155,7 @@ class KademliaNodeSearch(KademliaSearch):
 
 		Returns
 		------
-		(successful, contact_info) : tuple
+		(successful, k_closest) : tuple
 		search_in_progress : boolean
 		""" 
 		newly_contacted = []
@@ -233,12 +233,16 @@ class KademliaValueSearch(KademliaSearch):
 	def _handle_responses(self, responses_to_handle):
 		"""
 		Handles the response of the rpc_find_value calls. Ends when k nodes have been 
-		queried, there are no closer nodes returned, or the value is returned. Upon
+		queried, there are no closer nodes returned, or the value is found. Upon
 		completion performs an iterative store on the value.
 
 		Parameters
 		----------
 		responses : list
+
+		Returns
+		-------
+		
 		"""
 		newly_contacted = []
 		values_found = []
@@ -248,7 +252,7 @@ class KademliaValueSearch(KademliaSearch):
 
 			if response.has_happened():
 				newly_contacted.append(sender_id)
-				
+
 				if response.found_value():
 					self._values_received_from
 					values_found.append(response.get_data())
@@ -258,19 +262,21 @@ class KademliaValueSearch(KademliaSearch):
 				
 		self._contacted.push_all(newly_contacted)		
 
-		# if the value is found perform an iterative store and return the value
+		# if the value is found perform an iterative store if possible and return the value
 		if values_found:
+			value = values_found[self._target_id]
+			self._finished = True
+
 			if self._iterative_store_candidate:
-				value = values_found[self._target_id]
-				response = await self._protocol.store_value(self._iterative_store_candidates.pop(), self._target_id, value)
-				self._finished = True
-				return (True, value)
+				response = await self._protocol.store_value(self._iterative_store_candidates.pop(), self._target_id, value)	
+			return (True, value)
 		
 		any_closer = distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peekFirst())
 
+		# search failed
 		if self._finished and (self._contacted.size() >= k or not any_closer):
-			return False
+			return (False, merge_heaps(self._contacted, self._shortlist))
 
 
 
