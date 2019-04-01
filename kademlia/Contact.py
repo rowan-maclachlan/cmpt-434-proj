@@ -164,7 +164,7 @@ class ContactHeap():
             return
 
         # if the node is already in the heap don't add it
-        if self._node_dict[contact.getId()]:
+        if self.contains(contact):
             return
         else:
             distance = distance_to(self._node_id, contact.getId())
@@ -230,4 +230,7 @@ class ContactHeap():
         -------
         isIn : boolean
         """
-        return if self._node_dict[contact.getId()]
+        if contact.getId() in self._node_dict.keys():
+            return True
+        else:
+            return False

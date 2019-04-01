@@ -1,5 +1,3 @@
-from kademlia.KademliaSearch import RPCResponse
-
 def distance_to(node1_id, node2_id):
     """
     Gets the distance to node2_id from node1_id.
@@ -26,3 +24,26 @@ async def gather_responses(query_dict):
     queries = list(query_dict.values())
     results = await asyncio.gather(*queries)
     return tuple(zip(dict.keys(), map(RPCResponse, results)))
+
+
+def merge_heaps(heap1, heap2, len):
+    """
+    Merges heap1 and heap2 together creating a single list of length len.
+
+    Parameters
+    ----------
+    heap1 : :class: `ContactHeap`
+        The first list.
+    list2 : :class: `ContactHeap`
+        The second list.
+    len : int
+        Length of the resulting list
+    """
+    merged_list = []
+    while merged_heap.size() < len:
+        if heap1.peek_first() > heap2.peek_first():
+            merged_list.append(heap1.pop())
+        else:
+            merged_list.append(heap2.pop()) 
+
+    return merged_list
