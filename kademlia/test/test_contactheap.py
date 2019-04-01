@@ -1,6 +1,7 @@
 import sys
 sys.path.append('/home/silentknight/School/CS434/434proj/cmpt-434-proj')
 from kademlia.Contact import *
+from kademlia.utils import merge_heaps
 
 def test_push(node_id):
 	print(f"Running test_push with node_id: {node_id}")
@@ -62,6 +63,29 @@ def test_contains():
 	print()
 
 
+def test_merge_heaps():
+	contact_list1 = []
+	contact_list2 = []
+
+	for i in range(10):
+		contact_list1.append(Contact(pow(2, i), '0.0.0.0', 1245))
+	
+	for i in range(10):
+		contact_list2.append(Contact(pow(3, i), '0.0.0.0', 1245))
+
+	test_heap1 = ContactHeap(0)
+	test_heap2 = ContactHeap(0)
+	
+	test_heap1.push_all(contact_list1)
+	test_heap2.push_all(contact_list2)
+
+	merged_heap = merge_heaps(test_heap1, test_heap2, 10)
+
+	assert len(merged_heap) == 10
+
+	for ell in merged_heap:
+		print(f"node: {ell.getId()}")
+	print()
 
 """
 
@@ -76,3 +100,5 @@ test_push_all(0)
 test_push_all(256)
 
 test_contains()
+
+test_merge_heaps()

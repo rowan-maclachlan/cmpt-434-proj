@@ -185,7 +185,7 @@ class ContactHeap():
             self.push(ell)
 
 
-    def pop():
+    def pop(self):
         """
         Pops a contact from the heap, removes it from the node dictionary, and
         returns it.
@@ -201,7 +201,7 @@ class ContactHeap():
         popped_contact = heapq.heappop(self._heap)[1]
         del self._node_dict[popped_contact.getId()]
 
-        return popped_contact[1]
+        return popped_contact
 
 
     def peek_first(self):
@@ -214,7 +214,7 @@ class ContactHeap():
         ------
         tuple : the distance and the closest contact to the node id
         """
-        return this._heap[0]
+        return self._heap[0]
 
 
     def contains(self, contact):
@@ -245,3 +245,14 @@ class ContactHeap():
         numEll : int
         """
         return self._heap.size()
+
+
+    def get_heap(self):
+        """
+        Gets the heap.
+
+        Returns
+        -------
+        contact_heap : heap
+        """
+        return self._heap

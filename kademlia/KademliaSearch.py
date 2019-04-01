@@ -156,29 +156,22 @@ class KademliaNodeSearch(KademliaSearch):
 		(successful, k_closest) : tuple
 		search_in_progress : boolean
 		""" 
-		newly_contacted = []
-
 		for sender_info, response in responses_to_handle:
 			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
 			
 			if response.has_happened():
-				newly_contacted.append(sender_info)
+				vself._contacted.push(sender_info)
 				self._shortlist.push_all(response.get_data())
 
 				for peer_info in response.get_data():
-					# for now not making sure they are active, if I can learn about how
-					# to send pings and not have to await their finishing I'll think 
-					# about adding an active list
 					if peer_info.getId() == self._target_id:
 						self._finished = True
 						#TODO: make sure the nodes are active
 						target_closest = await self._protocol.find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
 						self._shortlist.push_all(target_closest)
 
-						return (self._finished, merge_heaps(self._shortlist, self._contacted))
-
-		self._contacted.push_all(newly_contacted)
+						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 
 		any_closer = distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peekFirst())
@@ -186,7 +179,7 @@ class KademliaNodeSearch(KademliaSearch):
 		# we failed ~(`-.-`)~ 
 		#TODO: what to return on failure
 		if not finished and (self._contacted.size() >= self._k_val or not any_closer):
-			return (self._finished, merge_heaps(self._shortlist, self._contacted))
+			return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		else:
 			self._closest_node = self._shortlist.peekFirst()[1]
 			return True
@@ -215,7 +208,7 @@ class KademliaValueSearch(KademliaSearch):
 		"""
 
 
-	def search(self, rpc_method):
+	async def search(self, rpc_method):
 		"""
 		The public method for calling the the underlying kademlia search. 
 		
@@ -228,7 +221,7 @@ class KademliaValueSearch(KademliaSearch):
 
 
 
-	def _handle_responses(self, responses_to_handle):
+	async def _handle_responses(self, responses_to_handle):
 		"""
 		Handles the response of the rpc_find_value calls. Upon completion performs an 
 		iterative store on the value and the closest node that did not send us the value.
@@ -245,38 +238,35 @@ class KademliaValueSearch(KademliaSearch):
 			Whether the search was succesful and either the value if it was 
 			found or a list of k closest nodes if the value was not found.
 		"""
-		newly_contacted = []
 		values_found = []
 
 		for sender_info, response in responses_to_handle:
 			response = RPCValueResponse(info)
 
 			if response.has_happened():
-				newly_contacted.append(sender_info)
+				self._contacted.push(sender_info)
 
 				if response.found_value():
 					values_found.append(response.get_data())
 				else:
 					self._shortlist.push_all(response.get_data())
 					self._iterative_store_candidates.push(sender_info)
-				
-		self._contacted.push_all(newly_contacted)		
 
 		# if the value is found perform an iterative store if possible and return the value
 		if values_found:
 			value = values_found[0][self._target_id]
 			self._finished = True
 
-			if self._iterative_store_candidate:
-				response = await self._protocol.store_value(self._iterative_store_candidates.pop(), self._target_id, value)	
-			return (True, value)
+			if self._iterative_store_candidates.size() > 0:
+				response = await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value)	
+			return (self._finished, value)
 		
 		any_closer = distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peekFirst())
 
 		# search failed
-		if self._finished and (self._contacted.size() >= k or not any_closer):
-			return (False, merge_heaps(self._contacted, self._shortlist))
+		if not self._finished and (self._contacted.size() >= k or not any_closer):
+			return (self._finished, merge_heaps(self._contacted, self._shortlist, self._k_val))
 		# continue
 		return None
 
@@ -315,7 +305,7 @@ class RPCResponse():
 
 class RPCValueResponse(RPCResponse):
 	"""
-	A wrapper for a response from a rpc_find_value call. Adds a found_value method
+	A wrapper for a response from an rpc_find_value call. Adds a found_value method
 	that checks if a value is in the response to the RPCResponse.
 	"""
 	def __init__(self, response):
