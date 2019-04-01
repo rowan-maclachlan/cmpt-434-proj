@@ -39,6 +39,27 @@ def test_push_all(node_id):
 		print(f"id: {ell[1].getId()} distance: {ell[0]}")
 	print()
 
+def test_contains():
+	print("Running test_contains")
+	contact_list = []
+
+	for i in range(10):
+		contact_list.append(Contact(pow(2, i), '0.0.0.0', 1245))
+
+	test_heap = ContactHeap(0)
+	test_heap.push_all(contact_list)
+
+	# test values that weren't added aren't contained
+	assert not test_heap.contains(Contact(5, '0.0.0.0', 12345))
+	assert not test_heap.contains(Contact(0, '0.0.0.0', 12345))
+	assert not test_heap.contains(Contact(511, '0.0.0.0', 12345))
+	assert not test_heap.contains(Contact(None, '0.0.0.0', 12345))
+
+	# test values that were added are contained
+	for i in range(10):
+		assert test_heap.contains(Contact(pow(2, i), '0.0.0.0', 12345))
+	print("success")
+	print()
 
 
 
@@ -53,3 +74,5 @@ test_push(0)
 
 test_push_all(0)
 test_push_all(256)
+
+test_contains()

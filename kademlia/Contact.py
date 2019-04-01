@@ -105,6 +105,9 @@ class ContactHeap():
         The heap of contacts.
     _contacted : set
         The set of nodes that have already been contacted.
+    _node_dict : dict
+        A dictionary of all nodes in the heap used for fast checking if a node 
+        is already in the heap.
     """
 
     def __init__(self, node_id, maxsize=p.params['k']):
@@ -115,6 +118,9 @@ class ContactHeap():
         """
         """
         self._heap = []
+        """
+        """
+        self._node_dict = {}
         """
         """
 
@@ -157,8 +163,13 @@ class ContactHeap():
         if not contact or contact.getId() == self._node_id:
             return
 
-        distance = distance_to(self._node_id, contact.getId())
-        heapq.heappush(self._heap, (distance, contact))
+        # if the node is already in the heap don't add it
+        if self._node_dict[contact.getId()]:
+            return
+        else:
+            distance = distance_to(self._node_id, contact.getId())
+            heapq.heappush(self._heap, (distance, contact))
+            self._node_dict[contact.getId()] = contact
 
 
     def push_all(self, contacts):
@@ -176,7 +187,8 @@ class ContactHeap():
 
     def pop():
         """
-        Pops the the heap and returns the contact popped.
+        Pops a contact from the heap, removes it from the node dictionary, and
+        returns it.
 
         Return
         ------
@@ -186,7 +198,10 @@ class ContactHeap():
             log.debug("popped from empty heap")
             return
 
-        return heapq.heappop(self._heap)
+        popped_contact = heapq.heappop(self._heap)
+        del self._node_dict[popped_contact.getId()]
+
+        return popped_contact
 
 
     def peek_first(self):
@@ -202,4 +217,17 @@ class ContactHeap():
         return this._heap[0]
 
 
-    
+    def contains(self, contact):
+        """
+        Checks if the heap contains a contact.
+
+        Parameters
+        ----------
+        contact : :class: `Contact`
+            Is this contact in the heap?
+
+        Returns
+        -------
+        isIn : boolean
+        """
+        return if self._node_dict[contact.getId()]

@@ -7,6 +7,7 @@ import kademlia.params as p
 
 log = logging.getLogger(__name__)
 
+
 Class KademliaSearch():
 	"""
 	The search function used by Kademlia to find nodes in a Kademlia network.
@@ -88,9 +89,8 @@ Class KademliaSearch():
 
 		Parameters
 		----------
-		rpc_method : :class: `Protocol`
-			The rpc function that defines the result of the queries of nodes. The function used 
-			to query the nodes in the search.
+		rpc_method : :class: `rpc_protocol_method`
+			The method used to find nodes.
 		""" 
 		prev_closest_node = None
 		finished = False
@@ -144,14 +144,20 @@ class KademliaNodeSearch(KademliaSearch):
 
 	async def _handle_responses(self, responses_to_handle):
 		"""
-		Handles a dictionary of responses. Returns the k closest nodes of each search
-		together into a list, marks nodes as contacted, and handles possible termination
-		conditions. If the search is returns False as the first value in the tuple to be handled
-		on the initiator of this search's end.
+		Handles a dictionary of responses. On completion returns a tuple of the success
+		of the search and either the target_id's contact information or returns the closest
+		node to the target_id's contact information. If the search will continue, returns 
+		only True.
 
 		Parameters
 		----------
 		responses : :class: `RPCResponse`
+
+
+		Returns
+		------
+		(successful, contact_info) : tuple
+		search_in_progress : boolean
 		""" 
 		newly_contacted = set()
 
@@ -165,19 +171,61 @@ class KademliaNodeSearch(KademliaSearch):
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
 						finished = True
-						return await self._protocol.find_close_nodes(self._initiator, peer_info)
+						return (finished, peer_info)
 
 		self._contacted.update(newly_contacted)
 		any_closer = distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peekFirst())
 
 		# we failed ~(`-.-`)~ 
-		# return the k closest neighbours of the closest node we found
+		#TODO: what to return on failure
 		if not finished and (self._contacted.size() >= self._k_val or not any_closer):
-			return await self._protocol.find_close_nodes(self._initiator, self._closest_node)
+			return (finished, self._closest_node)
 		else:
 			self._closest_node = self._shortlist.peekFirst()
-			return False
+			return True
+
+
+
+class KademliaValueSearch(KademliaSearch):
+	"""
+	Finds a node with a value and returns that node. Also performs iterative storing
+	by storing the value on the node on the closest neighbour that didn't return the 
+	value.
+
+	Attributes
+	----------
+	_iterative_target : :class: `Node`
+		The candidate for the iterative store.
+	"""
+
+	__init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
+		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
+		"""
+		"""
+		self._iterative_target
+		"""
+		"""
+
+
+	def search(self, rpc_method):
+		"""
+		Calls the the underlying kademlia search.
+		
+		Parameters
+		----------
+		rpc_method : :class: `rpc_protocol_method`
+			The method used to find nodes.
+		"""
+		self._search(rpc_method)
+
+
+
+	def _handle_responses(self, responses):
+		"""
+
+		"""
+
 
 
 
