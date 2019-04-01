@@ -8,7 +8,7 @@ import kademlia.params as p
 log = logging.getLogger(__name__)
 
 
-Class KademliaSearch():
+class KademliaSearch():
 	"""
 	The search function used by Kademlia to find nodes in a Kademlia network.
 	Asks the alpha closest nodes for their k closests nodes and then from
@@ -50,7 +50,7 @@ Class KademliaSearch():
 		the response
 	""" 
 
-	__init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
+	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
 		self._initiator = initiator
 		"""	
 		"""
@@ -60,7 +60,7 @@ Class KademliaSearch():
 		self._target_id = target_id
 		"""
 		"""
-		self._shortlist = ContactHeap(self._initiator.me.getId(), k)
+		self._shortlist = ContactHeap(target_id, k)
 		self._shortlist.push_all(self.initiator.find_nearest_neightbours(target_id))
 		log.debug(f"Creating search with peers: {self._shortlist}")
 		"""
@@ -74,7 +74,7 @@ Class KademliaSearch():
 		self._closest_node = self._shortlist.peekFirst()
 		"""
 		"""
-		self._contacted = set()
+		self._contacted = ContactHeap(target_id, k)
 		"""
 		"""
 		self._active_queries = {}
@@ -119,8 +119,6 @@ Class KademliaSearch():
 
 
 
-
-
 class KademliaNodeSearch(KademliaSearch):
 	"""
 	Does a node search, returning a tuple of the success of the search
@@ -131,7 +129,7 @@ class KademliaNodeSearch(KademliaSearch):
 	"""
 
 
-	__init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
+	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
 		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
 
 
@@ -159,28 +157,36 @@ class KademliaNodeSearch(KademliaSearch):
 		(successful, contact_info) : tuple
 		search_in_progress : boolean
 		""" 
-		newly_contacted = set()
+		newly_contacted = []
 
 		for sender_info, response in responses_to_handle:
-			log.debug(f"processing {sender_info.getId()}'s data")
-			# did we get a response
+			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
+			
 			if response.has_happened():
-				newly_contacted.add(sender_id)
+				newly_contacted.append(sender_info)
 				self._shortlist.push_all(response.get_data())
 
 				for peer_info in response.get_data():
+					# for now not making sure they are active, if I can learn about how
+					# to send pings and not have to await their finishing I'll think 
+					# about adding an active list
 					if peer_info.getId() == self._target_id:
 						finished = True
-						return (finished, peer_info)
 
-		self._contacted.update(newly_contacted)
+						target_closest = await self._protocol.find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
+						self._shortlist.push_all(target_closest)
+
+						return (finished, merge_heaps(self._shortlist, self._contacted))
+
+		self._contacted.push_all(newly_contacted)
+
 		any_closer = distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peekFirst())
 
 		# we failed ~(`-.-`)~ 
 		#TODO: what to return on failure
 		if not finished and (self._contacted.size() >= self._k_val or not any_closer):
-			return (finished, self._closest_node)
+			return (finished, merge_heaps(self._shortlist, self._contacted))
 		else:
 			self._closest_node = self._shortlist.peekFirst()
 			return True
@@ -199,7 +205,7 @@ class KademliaValueSearch(KademliaSearch):
 		The candidate for the iterative store.
 	"""
 
-	__init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
+	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
 		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
 		"""
 		"""
@@ -238,7 +244,7 @@ class RPCResponse():
     response : tuple
  		A tuple of the success/failer of the response and the data received.
     """ 
-    __init__(self, response):
+    def __init__(self, response):
         self._response = response
         """
         """
