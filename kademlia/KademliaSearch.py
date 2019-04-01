@@ -115,13 +115,15 @@ class KademliaSearch():
 
 			for peer in peers_to_contact:
 				self._active_queries[peer] = rpc_method(self._initiator, peer.getId()) 
-			responses = await gather_responses(self._response_dict)
+			responses = await gather_responses(self._active_queries)
 			# handles the responses. May terminate the search by setting finished to true,
 			# expanding contacted to be greater than k, or determining no nodes found are
 			# closer than the closest we have found so far
 			result = await self._handle_responses(responses)
 			prev_closest_node = self._closest_node
 
+		if not result:
+			log.debug("error in KademliaSearch: returned None but the search finished")
 		return result
 
 
@@ -177,15 +179,13 @@ class KademliaNodeSearch(KademliaSearch):
 						#TODO: make sure the nodes are active
 						target_closest = await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
 						self._shortlist.push_all(target_closest)
-
 						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		# we failed ~(`-.-`)~ 
 		#TODO: what to return on failure
 		if not finished and self._contacted.size() >= self._k_val:
 			return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		else:
-			self._closest_node = self._shortlist.peekFirst()[1]
-			return True
+			return None
 
 
 
@@ -261,14 +261,12 @@ class KademliaValueSearch(KademliaSearch):
 			self._finished = True
 
 			if self._iterative_store_candidates.size() > 0:
+				# only performing the iterative store if there are any candidates for it
 				response = await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value)	
 			return (self._finished, value)
 		
-		any_closer = distance_to(self._target_id, self._closest_node.getId())\
-					 >= distance_to(self._target_id, self._shortlist.peekFirst())
-
 		# search failed
-		if not self._finished and (self._contacted.size() >= k or not any_closer):
+		if not self._finished and self._contacted.size() >= k :
 			return (self._finished, merge_heaps(self._contacted, self._shortlist, self._k_val))
 		# continue
 		return None
