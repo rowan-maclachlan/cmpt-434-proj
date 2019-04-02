@@ -7,7 +7,13 @@ import kademlia.params as p
 
 log = logging.getLogger(__name__)
 
-#TODO: make sure nodes are active
+"""
+	TODOs
+"""
+#TODO: make sure nodes are active before returning them
+#TODO: handle iterative store failures and StoreSearch failures
+
+
 class KademliaSearch():
 	"""
 	The search function used by Kademlia to find nodes in a Kademlia network.
@@ -180,13 +186,18 @@ class KademliaNodeSearch(KademliaSearch):
 
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
-						log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
 						self._finished = True
-						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id))
-						self._shortlist.push_all(target_closest.get_data())
-						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
+						log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
+						 targets_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
+													self._initiator, self._initiator.getId(), self._target_id))
+						 # check if the target node responded, if not just pass the k closest we have found already
+						if targets_closest.has_happened():				
+							self._shortlist.push_all(target_closest.get_data())
+							return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
+						else:
+							log.warning(f"{self._target_id} did not respond")
+							return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		# we failed ~(`-.-`)~ 
-		#TODO: what to return on failure
 		if not finished and self._contacted.size() >= self._k_val:
 			return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		else:
@@ -265,16 +276,21 @@ class KademliaValueSearch(KademliaSearch):
 		if values_found:
 			value = values_found[0]
 			self._finished = True
-			if self._iterative_store_candidates.size() > 0:
-				# only performing the iterative store if there are any candidates for it
+			istore_target = None
+			while self._iterative_store_candidates.size() > 0:
+				# perform iterative store until it is successful
 				istore_target = self._iterative_store_candidates.pop()
 				log.debug(f"performing iterative store on {istore_target}")
 				response = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
+				# checking if store was successful
 				if not response.has_happened():
 					log.warning(f"{self._initiator.getId()}'s iterative store failed because {istore_target} did not respond")
 				else:
 					log.info(f"{istore_target} stored {value}")
-			return (self._finished, value)
+					return (self._finished, value)	
+			log.warning(f"{self._initiator.getId()}'s iterative store failed because either no nodes to store on or\
+							no nodes responded")
+			return(False, None)
 		
 		# search failed
 		if not self._finished and self._contacted.size() >= k:
@@ -351,10 +367,12 @@ class KandemliaStoreSearch(KademliaSearch):
 							self._shortlist.push_all(target_closest.get_data())
 							closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
 							log.debug(f"(success) {self._target_id} sending store requests to {closest_contacts}")
+
 							active_queries = {}
 							for peer_contact in closest_contacts:
 								active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
 							responses = await gather_responses(active_queries)
+
 							return (True, responses)
 						else:
 							log.warning(f"{self._target_id} did not respond in {self.initiator.getId()}\
