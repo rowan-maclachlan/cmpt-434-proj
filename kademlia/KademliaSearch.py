@@ -82,6 +82,8 @@ class KademliaSearch():
 		"""
 		"""
 		self._finished = False
+		"""
+		"""
 
 
 	async def _search(self, rpc_method):
@@ -112,7 +114,7 @@ class KademliaSearch():
 			 	# the nearest alpha 
 			 	for i in range(self._k_val):
 			 		peers_to_contact.append(self._shortlist.pop())
-			log.debug(f"{self._initiator} preparing to contact: {peers_to_contact}")
+			log.info(f"{self._initiator} preparing to contact: {peers_to_contact}")
 			for peer in peers_to_contact:
 				self._active_queries[peer] = rpc_method(self._initiator, peer.getId()) 
 			responses = await gather_responses(self._active_queries)
@@ -141,6 +143,8 @@ class KademliaNodeSearch(KademliaSearch):
 
 	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
 		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
+		"""
+		"""
 
 
 	async def search(self, rpc_method):
@@ -166,7 +170,7 @@ class KademliaNodeSearch(KademliaSearch):
 		search_in_progress : boolean
 		""" 
 		for sender_info, response in responses_to_handle:
-			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
+			log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
 			del(self._active_queries[sender_info.getId()])
 
@@ -176,6 +180,7 @@ class KademliaNodeSearch(KademliaSearch):
 
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
+						log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
 						self._finished = True
 						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id))
 						self._shortlist.push_all(target_closest.get_data())
@@ -252,7 +257,7 @@ class KademliaValueSearch(KademliaSearch):
 
 				if response.found_value():
 					values_found.append(response.get_data())
-					log.debug(f"{sender_info.getId()} found value: {self._target_id}:{response.get_data()}")
+					log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._targetid}:{resonse.get_data()}")
 				else:
 					self._shortlist.push_all(response.get_data())
 					self._iterative_store_candidates.push(sender_info)
@@ -260,10 +265,15 @@ class KademliaValueSearch(KademliaSearch):
 		if values_found:
 			value = values_found[0]
 			self._finished = True
-			log.debug(f"performing iterative store on {self._iteartive_store_condidates.peek_first[1]}")
 			if self._iterative_store_candidates.size() > 0:
 				# only performing the iterative store if there are any candidates for it
-				response = RPCValueResponse(await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value))	
+				istore_target = self._iterative_store_candidates.pop()
+				log.debug(f"performing iterative store on {istore_target}")
+				response = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
+				if not response.has_happened():
+					log.warning(f"{self._initiator.getId()}'s iterative store failed because {istore_target} did not respond")
+				else:
+					log.info(f"{istore_target} stored {value}")
 			return (self._finished, value)
 		
 		# search failed
@@ -323,7 +333,7 @@ class KandemliaStoreSearch(KademliaSearch):
 		search_in_progress : boolean
 		""" 
 		for sender_info, response in responses_to_handle:
-			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
+			log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
 			del(self._active_queries[sender_info.getId()])
 			
@@ -333,24 +343,29 @@ class KandemliaStoreSearch(KademliaSearch):
 
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
+						log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
 						self._finished = True
 						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
 													self._initiator,self._initiator.getId(), self._target_id))
 						if target_closest.has_happened():
 							self._shortlist.push_all(target_closest.get_data())
+							closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
+							log.debug(f"(success) {self._target_id} sending store requests to {closest_contacts}")
 							active_queries = {}
-							for peer_contact in merge_heaps(self._shortlist, self._contacted, self._k_val):
+							for peer_contact in closest_contacts:
 								active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
 							responses = await gather_responses(active_queries)
 							return (True, responses)
 						else:
-							log.debug(f"{self._target_id} did not respond in {self.initiator.getId()}\
+							log.warning(f"{self._target_id} did not respond in {self.initiator.getId()}\
 							 StoreSearch. StoreSearch failed.")
 							return (False, None)
 		# we failed ~(`-.-`)~ 
 		if not finished and self._contacted.size() >= self._k_val:
+			closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
+			log.debug(f"(failure) {self._target_id} sending store requests to {closest_contacts}")
 			active_queries = {}
-			for peer_contact in merge_heaps(self._shortlist, self._contacted, self._k_val):
+			for peer_contact in :
 				active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
 			responses = await gather_responses(active_queries)
 			return (False, responses)
