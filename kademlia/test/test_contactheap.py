@@ -62,7 +62,6 @@ def test_contains():
 	print("success")
 	print()
 
-
 def test_merge_heaps():
 	contact_list1 = []
 	contact_list2 = []
