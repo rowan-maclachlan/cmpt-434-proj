@@ -7,7 +7,7 @@ import kademlia.params as p
 
 log = logging.getLogger(__name__)
 
-
+#TODO: make sure nodes are active
 class KademliaSearch():
 	"""
 	The search function used by Kademlia to find nodes in a Kademlia network.
@@ -112,7 +112,7 @@ class KademliaSearch():
 			 	# the nearest alpha 
 			 	for i in range(self._k_val):
 			 		peers_to_contact.append(self._shortlist.pop())
-
+			log.debug(f"{self._initiator} preparing to contact: {peers_to_contact}")
 			for peer in peers_to_contact:
 				self._active_queries[peer] = rpc_method(self._initiator, peer.getId()) 
 			responses = await gather_responses(self._active_queries)
@@ -169,7 +169,7 @@ class KademliaNodeSearch(KademliaSearch):
 			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
 			del(self._active_queries[sender_info.getId()])
-			
+
 			if response.has_happened():
 				self._contacted.push(sender_info)
 				self._shortlist.push_all(response.get_data())
@@ -177,7 +177,6 @@ class KademliaNodeSearch(KademliaSearch):
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
 						self._finished = True
-						#TODO: make sure the nodes are active
 						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id))
 						self._shortlist.push_all(target_closest.get_data())
 						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
@@ -253,22 +252,22 @@ class KademliaValueSearch(KademliaSearch):
 
 				if response.found_value():
 					values_found.append(response.get_data())
+					log.debug(f"{sender_info.getId()} found value: {self._target_id}:{response.get_data()}")
 				else:
 					self._shortlist.push_all(response.get_data())
 					self._iterative_store_candidates.push(sender_info)
-
 		# if the value is found perform an iterative store if possible and return the value
 		if values_found:
 			value = values_found[0]
 			self._finished = True
-
+			log.debug(f"performing iterative store on {self._iteartive_store_condidates.peek_first[1]}")
 			if self._iterative_store_candidates.size() > 0:
 				# only performing the iterative store if there are any candidates for it
 				response = RPCValueResponse(await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value))	
 			return (self._finished, value)
 		
 		# search failed
-		if not self._finished and self._contacted.size() >= k :
+		if not self._finished and self._contacted.size() >= k:
 			return (self._finished, merge_heaps(self._contacted, self._shortlist, self._k_val))
 		# continue
 		return None
@@ -335,7 +334,6 @@ class KandemliaStoreSearch(KademliaSearch):
 				for peer_info in response.get_data():
 					if peer_info.getId() == self._target_id:
 						self._finished = True
-						#TODO: make sure the nodes are active
 						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
 													self._initiator,self._initiator.getId(), self._target_id))
 						if target_closest.has_happened():
