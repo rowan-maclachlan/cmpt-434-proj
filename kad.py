@@ -4,6 +4,65 @@ import asyncio
 
 from kademlia.Node import Node
 
+
+def prompt():
+    print("'set <key (str)> <value (str)>' to store data\n"\
+          "'get <value (str)>' to retrieve data\n"\
+          "'inspect' to view this node's state\n"
+          "'quit' to leave\n")
+
+################################################################################
+async def do_get(node, key):
+    result = await node.get(key)
+    if result[0] and isinstance(result[1], str):
+        print(f"Found {key}:{result[1]} on the Kademlia network.")
+    elif result[0]:
+        print("Failed to find {key} on the Kademlia network:  Found:\n"\
+                + str(result[1:]))
+    else:
+        print(f"No such value for {key} on the Kademlia network.")
+
+async def do_set(node, key, value):
+    result = await node.put(key, value)
+    if result[0]:
+        print(f"Stored {key}:{value} on the Kademlia network.")
+    else:
+        print(f"Failed to store {key}:{value} on the Kademlia network.")
+
+async def do_ping(node, ip, port):
+    result = await node.ping(ip, int(port))
+    if result[0]:
+        print(f"Received PONG from {result[1]}.")
+    else:
+        print(f"No response received from {ip}:{port}")
+
+################################################################################
+def handle_input(node):
+    args = ""
+    prompt()
+    args = sys.stdin.readline().split(" ")
+    
+    cmd = args[0].rstrip()
+    print(f"Attempting to run {cmd}...")
+    try:
+        if cmd == "get":
+            asyncio.create_task(do_get(node, args[1]))
+        elif cmd == "set":
+            asyncio.create_task(do_set(node, args[1], args[2]))
+        elif cmd == "ping":
+            asyncio.create_task(do_ping(node, args[1], args[2]))
+        elif cmd == "inspect":
+            print(f"Data for this node: {node.data}")
+            print(f"Routing table for {node.me}")
+            print(str(node.table))
+        elif cmd == "quit":
+            raise KeyboardInterrupt
+    except IndexError:
+        # Handle poorly formed commands
+        print("Invalid command.  Try again.")
+
+################################################################################
+
 if len(sys.argv) == 3:
     my_ip = sys.argv[1]
     my_port = sys.argv[2]
@@ -37,65 +96,26 @@ logasyncio = logging.getLogger('asyncio')
 logasyncio.setLevel(logging.DEBUG)
 logasyncio.addHandler(handler)
 
-
 loop = asyncio.get_event_loop()
 loop.set_debug(True)
 
 # Create Kademlia node
 node = Node(my_ip, my_port)
 
-loop.run_until_complete(node.listen())
-# Bootstrap node if applicable
-if (boot_ip is not None) and (boot_port is not None):
-    loop.run_until_complete(node.bootstrap(boot_ip, boot_port))
-
 print("This process stores and retrieves strings on a"\
       " distributed hash table based off of the Kademlia protocol.")
 
-command = ""
-instructions = "'set <key (str)> <value (str)>' to store data\n"\
-               "'get <value (str)>' to retrieve data\n"\
-               "'quit' to leave\n"
 
-async def do_get(node, key):
-    result = await node.get(key)
-    if result is None:
-        print("No such key-value exists on the network.")
-    else:
-        print(result[1] if result[0] else "No response received from peers.")
-
-async def do_set(node, key, value):
-    result = await node.put(key, value)
-    print(result[1] if result[0] else "No response received.")
-
-async def do_ping(node, ip, port):
-    result = await node.ping(ip, int(port))
-    print(result[1] if result[0] else "No response received.")
-
-while(1):
-    try:
-        args = input(instructions).split(" ")
-
-        if args[0] == "get":
-            print(f"do get {args[1]}...")
-            loop.run_until_complete(do_get(node, args[1]))
-        elif args[0] == "set":
-            print(f"do set {args[1]} {args[2]}...")
-            loop.run_until_complete(do_set(node, args[1], args[2]))
-        elif args[0] == "ping":
-            loop.run_until_complete(do_ping(node, args[1], args[2]))
-        elif args[0] == "inspect":
-            print(str(node.table))
-        elif args[0] == "quit":
-            print("Leaving!")
-            break
-        else:
-            print("Invalid command.  Try again.")
-    except IndexError:
-        print("Invalid command.  Try again.")
-    except KeyboardInterrupt:
-        print("Leaving!")
-        break
-
-node.stop()
-loop.close()
+loop.run_until_complete(node.listen())
+if boot_ip is not None and boot_port is not None:
+    print("Performing bootstrapping...")
+    loop.run_until_complete(node.bootstrap(boot_ip, boot_port))
+prompt()
+loop.add_reader(sys.stdin, handle_input, node)
+try:
+    loop.run_forever()
+except KeyboardInterrupt:
+    print("\nQuitting!")
+    node.stop()
+    loop.stop()
+    exit(0)
