@@ -168,6 +168,7 @@ class KademliaNodeSearch(KademliaSearch):
 		for sender_info, response in responses_to_handle:
 			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
+			del(self._active_queries[sender_info.getId()])
 			
 			if response.has_happened():
 				self._contacted.push(sender_info)
@@ -177,8 +178,8 @@ class KademliaNodeSearch(KademliaSearch):
 					if peer_info.getId() == self._target_id:
 						self._finished = True
 						#TODO: make sure the nodes are active
-						target_closest = await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
-						self._shortlist.push_all(target_closest)
+						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id))
+						self._shortlist.push_all(target_closest.get_data())
 						return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		# we failed ~(`-.-`)~ 
 		#TODO: what to return on failure
@@ -245,6 +246,7 @@ class KademliaValueSearch(KademliaSearch):
 
 		for sender_info, response in responses_to_handle:
 			response = RPCValueResponse(response)
+			del(self._active_queries[sender_info.getId()])
 
 			if response.has_happened():
 				self._contacted.push(sender_info)
@@ -262,7 +264,7 @@ class KademliaValueSearch(KademliaSearch):
 
 			if self._iterative_store_candidates.size() > 0:
 				# only performing the iterative store if there are any candidates for it
-				response = await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value)	
+				response = RPCValueResponse(await self._protocol.try_store_value(self._iterative_store_candidates.pop(), self._target_id, value))	
 			return (self._finished, value)
 		
 		# search failed
@@ -270,6 +272,7 @@ class KademliaValueSearch(KademliaSearch):
 			return (self._finished, merge_heaps(self._contacted, self._shortlist, self._k_val))
 		# continue
 		return None
+
 
 
 class KandemliaStoreSearch(KademliaSearch):
@@ -317,12 +320,13 @@ class KandemliaStoreSearch(KademliaSearch):
 
 		Returns
 		------
-		(found, responses) : tuple
+		(found, responses_to_handle) : tuple
 		search_in_progress : boolean
 		""" 
 		for sender_info, response in responses_to_handle:
 			log.debug(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
 			response = RPCResponse(response)
+			del(self._active_queries[sender_info.getId()])
 			
 			if response.has_happened():
 				self._contacted.push(sender_info)
@@ -332,15 +336,20 @@ class KandemliaStoreSearch(KademliaSearch):
 					if peer_info.getId() == self._target_id:
 						self._finished = True
 						#TODO: make sure the nodes are active
-						target_closest = await self._protocol.try_find_close_nodes(self._initiator, self._initiator.getId(), self._target_id)
-						self._shortlist.push_all(target_closest)
-						active_queries = {}
-						for peer_contact in merge_heaps(self._shortlist, self._contacted, self._k_val):
-							active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
-						responses = await gather_responses(active_queries)
-						return (True, responses)
+						target_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
+													self._initiator,self._initiator.getId(), self._target_id))
+						if target_closest.has_happened():
+							self._shortlist.push_all(target_closest.get_data())
+							active_queries = {}
+							for peer_contact in merge_heaps(self._shortlist, self._contacted, self._k_val):
+								active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
+							responses = await gather_responses(active_queries)
+							return (True, responses)
+						else:
+							log.debug(f"{self._target_id} did not respond in {self.initiator.getId()}\
+							 StoreSearch. StoreSearch failed.")
+							return (False, None)
 		# we failed ~(`-.-`)~ 
-		#TODO: what to return on failure
 		if not finished and self._contacted.size() >= self._k_val:
 			active_queries = {}
 			for peer_contact in merge_heaps(self._shortlist, self._contacted, self._k_val):
