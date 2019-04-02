@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../..")
 from kademlia.Contact import *
+from kademlia.utils import merge_heaps
 
 def test_push():
 	c1 = Contact(4, '0.0.0.0', 12345)
@@ -59,4 +60,29 @@ def test_contains():
 		assert test_heap.contains(Contact(pow(2, i), '0.0.0.0', 12345))
 	print("success")
 	print()
+
+def test_merge_heaps():
+	contact_list1 = []
+	contact_list2 = []
+
+	for i in range(10):
+		contact_list1.append(Contact(pow(2, i), '0.0.0.0', 1245))
+	
+	for i in range(10):
+		contact_list2.append(Contact(pow(3, i), '0.0.0.0', 1245))
+
+	test_heap1 = ContactHeap(0)
+	test_heap2 = ContactHeap(0)
+	
+	test_heap1.push_all(contact_list1)
+	test_heap2.push_all(contact_list2)
+
+	merged_heap = merge_heaps(test_heap1, test_heap2, 10)
+
+	assert len(merged_heap) == 10
+
+	for ell in merged_heap:
+		print(f"node: {ell.getId()}")
+	print()
+
 

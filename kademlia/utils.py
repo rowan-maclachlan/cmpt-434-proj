@@ -26,7 +26,7 @@ async def gather_responses(query_dict):
     return tuple(zip(dict.keys(),  results))
 
 
-def merge_heaps(heap1, heap2, len):
+def merge_heaps(heap1, heap2, n_ell):
     """
     Merges heap1 and heap2 together creating a single list of length len.
 
@@ -36,14 +36,13 @@ def merge_heaps(heap1, heap2, len):
         The first list.
     list2 : :class: `ContactHeap`
         The second list.
-    len : int
+    n_ell : int
         Length of the resulting list
     """
     merged_list = []
-    while merged_heap.size() < len:
-        if heap1.peek_first() > heap2.peek_first():
+    while len(merged_list) < n_ell:
+        if heap1.peek_first() < heap2.peek_first():
             merged_list.append(heap1.pop())
         else:
             merged_list.append(heap2.pop()) 
-
     return merged_list
