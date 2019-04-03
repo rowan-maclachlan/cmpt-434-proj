@@ -5,6 +5,10 @@
 \usepackage{blindtext}    % Filler text 
 \usepackage{hyperref}     % for urls with /url{}
 
+% For our bibliography
+\usepackage[backend=biber, sorting=none, hyperref=true]{biblatex}
+\addbibresource{\jobname.bib}
+
 %Margin --- 1 inch on all sides
 \usepackage[letterpaper]{geometry} \usepackage{times}
 \usepackage{xcolor}
@@ -37,17 +41,13 @@
 \lstset{style=custom}
 % For inline code snippets.  use `\code{var = "Hello!"}`
 \definecolor{codegray}{gray}{0.9}
+\newcommand{\code}[1]{\colorbox{codegray}{\texttt{#1}}}
 
 \usepackage{indentfirst} % Indent the first paragraph after section headings
 \setlength{\parskip}{1em} % Set inter-paragraph spacing
 \setlength{\parindent}{2em} % Set paragraph indentation
 \usepackage{titlesec}
 \usepackage{etoolbox}
-\makeatletter
-\patchcmd{\thebibliography}{
-    \chapter*{\bibname}\@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}}{
-    \section{References}}{}{}
-\makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Title page
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,7 +61,7 @@
 		\vspace*{30px} % Push down sub text
 		\hrulefill \\
 		\vspace*{20px}
-		{\Huge \uppercase{Project Proposal\\}} % Title
+		{\Huge \uppercase{Kademlia\\}} % Title
 		\vspace*{20px}
 		\hrulefill \\
 		\vspace*{30px}
@@ -94,17 +94,8 @@
             evaluate whether you've succeeded at your objective.
     \end{itemize}
 
-    \section{Core Concepts}
-    What does peer-to-peer file sharing\cite{bittorrent-wiki}, blockchain,
-    crypto-currencies\cite{ethereum-rlp}, private peer-to-peer voice and text
-    messaging apps\cite{tox-site}, distributed social-media
-    platforms\cite{distributed-social-networks}, and interplanetary internet
-    models\cite{ipfs-site} have in common?  If you guessed: "Well, they all rely
-    upon or implement in some way a distributed data structure to achieve some
-    of their core functionality," you would be correct.  Most of the
-    technologies from the above list implement or utilize a distributed hash
-    table (or a similar distributed data structure, in the case of blockchain).
-    These DHTs are similar in principle to a regular hash table in that they
+    \section{Introduction}
+    DHTs are similar in principle to a regular hash table in that they
     provide the structure for fast retrieval of an object by referencing the
     location of the object's hash value.  However, a distributed hash table is
     stored across nodes in a network, and this introduces a variety of
@@ -118,7 +109,7 @@
     \section{Objectives}
     We hope that by implementing a very simple version of a DHT and by demonstrating
     its use on a small network we will become familiar with the issues
-    overcome by the more large-scale applications of DHTs.  As referenced above,
+    overcome by the more robust and mature DHT implementations.  As referenced above,
     these issues are myriad and often difficult to solve, but not impossible.
     By implementing an incremental plan to gradually roll out more complex features, new
     features, or re-implement sub-systems of our application, we will minimize
@@ -161,6 +152,22 @@
 
     \section{Implementation}
         \subsection{Use}
+            Using the program is relatively simple.  The project folder, once
+            downloaded (either provided by the students or downloaded from the
+            GIT repository, which is currently private) has a simple
+            structure.  The source code is in the \code{kademlia} folder.  So
+            long as the user has a python3.7 (or greater) environment,
+            everything should work.
+            \begin{itemize}
+                \item Run \code{make init}. This will install the application
+                    dependencies.
+                \item run \code{python3 kad.py}.  This will launch a single
+                    Kademlia node.  To see application use, run the program
+                    without arguments.
+                \item Use command \code{set}, \code{get}, \code{ping}, and
+                    \code{inspect} to interact with the DHT.
+            \end{itemize}
+            Please view the README for further details.
         \subsection{High-Level Overview and Tooling}
             \subsubsection{RPC library}
                 The Kademlia paper implies that the protocol is implemented
@@ -174,18 +181,22 @@
                 a NAT.  This requires the use of a NAT traversal technique such
                 as Hole-Punching or SOCKS (Socket Secure) to overcome the
                 difficulties inherent in routing requests through NATs.
-                \textbf{TODO:
-                More here on why Kademlia specifies UDP?}  Other Kademlia
-                implementations use a python library asyncio, and while the
-                semantics of asynchronous rpc might make implementation
+                Our primary investigation showed other Kademlia
+                implementations using the core python library asyncio to manage
+                callback procedures for asyncronous code execution. While the
+                semantics of asynchronous RPC might make implementation
                 \textit{more} difficult than for a simple synchronous I/O
                 implementation (the python socket module directly, for
                 example), implementing asynchronous UDP RCP with asyncio is
-                very simple.
+                very simple.  In fact, we used a 3rd party library called
+                rpcudp which overlays functionality for remote procedure calls
+                onto a datagram communication protocol - all
+                asynchronously!\cite{rpcudp}
 
                 As described on the asyncio Read-The-Docs page: "asyncio is
                 often a perfect fit for IO-bound and high-level structured
-                network code." This is exactly the Kademlia use-case.
+                network code." This is exactly the Kademlia
+                use-case.\cite{asyncio}
 
             \subsubsection{hashing}
                 Kademlia specifies the use of the 160-bit SHA-1 hash for data,
@@ -310,44 +321,7 @@ def hash_function(data):
 	
     \pagebreak
 
-\bibliographystyle{plain}
-\bibliography{bibliography}
+\nocite{*}
+\printbibliography
 
-	\begin{thebibliography}{10}
-		\bibitem{ipfs-site}
-            \textbf{\url{https://ipfs.io/}}\\
-            The official site of the IPFS project.
-		\bibitem{tox-site}
-            \textbf{\url{https://tox.chat/}}\\
-            The official site of the Tox project.
-		\bibitem{bittorrent-wiki}
-            \textbf{\url{https://en.wikipedia.org/wiki/BitTorrent}}\\
-            The BitTorrent wiki article (sorry.)
-		\bibitem{ethereum-rlp}
-            \textbf{\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}}\\
-            A reference file on the ethereum github.
-		\bibitem{distributed-social-networks}
-            \textbf{\url{https://arxiv.org/pdf/1508.05591.pdf}}\\
-            An article on the use of DHTs for distributed social network
-            implementations.
-		\bibitem{kademlia}
-		    \textbf{\url{https://pdos.csail.mit.edu/~petar/papers/maymounkov-kademlia-lncs.pdf}}\\
-            The original \textbf{Kademlia} algorithm paper.
-		\bibitem{chord}
-	    	\textbf{\url{https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf}}\\
-            A paper on the DHT protocol \textbf{Chord}.
-        \bibitem{tapestry}
-	    	\textbf{\url{http://www.srhea.net/papers/tapestry_jsac.pdf}}\\
-            A paper on the p2p overlay message routing algorithm \textbf{Tapestry}.
-        \bibitem{tapestry}
-	    	\textbf{\url{https://people.mpi-sws.org/~gummadi/papers/p2ptechreport.pdf}}\\
-            A measurement study on peer-to-peer file sharing systems.
-		\bibitem{pastry}
-	    	\textbf{\url{https://www.cs.rice.edu/~druschel/publications/Pastry.pdf}}\\
-            A protocol for internet overlay (overweb) object location and
-            routing in potentially very large WANs.
-        \bibitem{medium}
-	    	\textbf{\url{https://medium.com/karachain/peer-to-peer-protocols-explained-3b1d947c4600}}\\
-            An pop-science article on peer-to-peer protocols.
-	\end{thebibliography}
 \end{document}

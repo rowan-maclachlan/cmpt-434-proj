@@ -1,4 +1,4 @@
-Kademlia implementation specification:
+Kdemlia implementation specification:
 http://xlattice.sourceforge.net/components/protocol/kademlia/specs.html
 
 implementation in Python
