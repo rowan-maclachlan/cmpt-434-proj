@@ -127,12 +127,9 @@ class Node():
             self.data[hashkey] = value
             # TODO these reponses need to be unified and formatted the same
             return [ True, { hashkey : value } ]
-        # TODO this should not be only our known neighbours - we should query
-        # them for closer contacts.
-        # We need to implement the "Node Lookup" portion of the Kademlia
-        # implementation now.
+        store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
-        return await self.protocol.try_store_value(neighbours[0], hashkey, value)
+        return await store_search.search(self.protocol.try_find_close_nodes)
 
 
     def tuple_to_contact(self, tuple):
@@ -168,9 +165,8 @@ class Node():
             log.error("This node has no record of any other nodes!")
             return [ False, None ]
 
-        # TODO we need to successively query nodes we find closer and closer to
-        # our key.
-        response = await self.try_find_value(neighbours[0])
+        value_search = KademliaValueSearch(self.me, self.protocol, hashkey, neighbours)
+        response = await value_search.search(try_find_value)
         if response[0]:
             if isinstance(response[1], str):
                 return response
