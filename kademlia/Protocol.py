@@ -140,8 +140,7 @@ class Protocol(RPCProtocol):
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
         # TODO Don't return the source itself!
-        nearest_neighbours = self.table.find_nearest_neighbours(targetId,
-                exclude=source)
+        nearest_neighbours = self.table.find_nearest_neighbours(targetId, exclude=source)
         # Return a list of tuple(Contact) so that pmsgpack can successfully
         # pack our Contact objects.
         return list(map(tuple, nearest_neighbours))

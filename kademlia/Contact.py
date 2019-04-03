@@ -167,7 +167,7 @@ class ContactHeap():
             return
 
         # if the node is already in the heap don't add it
-        if self.contains(contact):
+        if contact in self:
             return
         else:
             distance = distance_to(self._node_id, contact.getId())
@@ -223,7 +223,7 @@ class ContactHeap():
             return self._heap[0]
 
 
-    def contains(self, contact):
+    def __contains__(self, contact):
         """
         Checks if the heap contains a contact.
 
@@ -242,7 +242,7 @@ class ContactHeap():
             return False
 
     
-    def size(self):
+    def __len__(self):
         """
         Gets the number of ellements in the heap.
 

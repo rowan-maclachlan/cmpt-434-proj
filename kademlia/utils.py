@@ -42,17 +42,17 @@ def merge_heaps(heap1, heap2, n_ell):
         Length of the resulting list
     """
     merged_list = []
-    while heap1.size() and heap2.size() and len(merged_list) < n_ell:
+    while len(heap1) and len(heap2) and len(merged_list) < n_ell:
         if heap1.peek_first() < heap2.peek_first():
             merged_list.append(heap1.pop())
         else:
             merged_list.append(heap2.pop()) 
 
-    if heap1.size()  == 0:
-        while heap2.size() > 0 and len(merged_list) < n_ell:
+    if len(heap1) == 0:
+        while len(heap2) > 0 and len(merged_list) < n_ell:
             merged_list.append(heap2.pop())
     else:
-        while heap1.size() > 0 and len(merged_list) < n_ell:
-            merged_list.appen(heap1.pop())
+        while len(heap1) > 0 and len(merged_list) < n_ell:
+            merged_list.append(heap1.pop())
 
     return merged_list

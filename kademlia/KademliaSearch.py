@@ -112,7 +112,7 @@ class KademliaSearch():
 
         # loop until we have found the node, we have queried k nodes or all
         # responses returned were not closer then our closest yet
-        while not self._finished and self._contacted.size() <= self._k_val and self._shortlist.size() > 0:
+        while not self._finished and len(self._contacted) <= self._k_val and len(self._shortlist) > 0:
             peers_to_contact = []
             if (distance_to(self._target_id, self._closest_node.getId())\
                     >= distance_to(self._target_id, self._shortlist.peek_first()[1].getId())):
@@ -202,7 +202,7 @@ class KademliaNodeSearch(KademliaSearch):
                             log.warning(f"{self._target_id} did not respond")
                             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         # we failed ~(`-.-`)~ 
-        if not finished and self._contacted.size() >= self._k_val and self._shortlist.size() == 0:
+        if not finished and len(self._contacted) >= self._k_val and len(self._shortlist) == 0:
             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         else:
             return None
@@ -282,7 +282,7 @@ class KademliaValueSearch(KademliaSearch):
             value = values_found[0]
             self._finished = True
             istore_target = None
-            while self._iterative_store_candidates.size() > 0:
+            while len(self._iterative_store_candidates) > 0:
                 # perform iterative store until it is successful
                 istore_target = self._iterative_store_candidates.pop()
                 log.debug(f"performing iterative store on {istore_target}")
@@ -298,7 +298,7 @@ class KademliaValueSearch(KademliaSearch):
             return(True, value)
         
         # search failed
-        if not self._finished and (self._contacted.size() >= self._k_val or not self._shortlist.size() > 0):
+        if not self._finished and (len(self._contacted) >= self._k_val or not len(self._shortlist) > 0):
             return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
         # continue
         return None
@@ -384,7 +384,7 @@ class KademliaStoreSearch(KademliaSearch):
                              StoreSearch. StoreSearch failed.")
                             return (False, None)
         # we failed ~(`-.-`)~ 
-        if not self._finished and (self._contacted.size() >= self._k_val or not self._shortlist.size() > 0):
+        if not self._finished and (len(self._contacted) >= self._k_val or not len(self._shortlist) > 0):
             closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
             log.debug(f"(failure) {self._target_id} sending store requests to {closest_contacts}")
             active_queries = {}
