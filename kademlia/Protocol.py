@@ -192,8 +192,8 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
-        if self.data.key() == targetKey:
-            value = self.data[targetKey]
+        if targetKey in self.data:
+            return self.data[targetKey]
         else:
             # If we do not have the value, return nodes which may have it 
             return self.rpc_find_close_nodes(sender, senderId, targetKey)

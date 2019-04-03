@@ -14,7 +14,7 @@ def prompt():
 ################################################################################
 async def do_get(node, key):
     result = await node.get(key)
-    if result[0] and isinstance(result[1], str):
+    if result and isinstance(result[1], str):
         print(f"Found {key}:{result[1]} on the Kademlia network.")
     elif result[0]:
         print("Failed to find {key} on the Kademlia network:  Found:\n"\

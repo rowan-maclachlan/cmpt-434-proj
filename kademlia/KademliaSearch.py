@@ -130,7 +130,7 @@ class KademliaSearch():
                     peers_to_contact.append(self._shortlist.pop())
             log.info(f"{self._initiator} preparing to contact: {peers_to_contact}")
             for peer in peers_to_contact:
-                self._active_queries[peer] = rpc_method(self._initiator, peer.getId()) 
+                self._active_queries[peer] = rpc_method(peer, self._target_id) 
             responses = await gather_responses(self._active_queries)
             # handles the responses. May terminate the search by setting finished to true,
             # expanding contacted to be greater than k, or determining no nodes found are
@@ -275,7 +275,7 @@ class KademliaValueSearch(KademliaSearch):
 
                 if response.found_value():
                     values_found.append(response.get_data())
-                    log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._targetid}:{resonse.get_data()}")
+                    log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._target_id}:{response.get_data()}")
                 else:
                     self._shortlist.push_all(response.get_data())
                     self._iterative_store_candidates.push(sender_info)
@@ -289,13 +289,14 @@ class KademliaValueSearch(KademliaSearch):
             self._finished = True
             istore_target = self._iterative_store_candidates.pop()
             # make sure there is actually a candidate for the iterative store first
-            if not istore_target:
+            if not istore_target == None:
                 log.debug(f"{self._initiator.getId()} performing iterative store on {istore_target}")
                 istore = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
                 if istore.has_happened():
                     log.info(f"{istore_target} stored {value}")
                 else:
                     log.error(f"iterative store {istore_target.getId()} failed due to timemout")
+        # the search was successful, return the value
         if self._finished:
             return (True, value)    
         # search finished but did not find the value, returns k closest contacts
@@ -383,7 +384,7 @@ class KademliaStoreSearch(KademliaSearch):
             for peer_contact in closest_contacts:
                 active_queries[peer_contact.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
             await gather_responses(active_queries)
-            return (False, )
+            return (True, )
         else:
             return (False, [])
 
@@ -441,7 +442,7 @@ class RPCValueResponse(RPCResponse):
         """
         Checks if the data received is a list of contacts or some values
         """
-        return this._happened and isinstance(str, self._data)
+        return self._happened and isinstance( self._data, str)
 
 
 def tuple_to_contact(tuple):
