@@ -57,7 +57,7 @@ class KademliaSearch():
 	""" 
 
 
-	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
+	def __init__(self, initiator, protocol, target_id, contacts, k=p.params['k'], alpha=p.params['alpha']):
 		self._initiator = initiator
 		"""	
 		"""
@@ -68,8 +68,8 @@ class KademliaSearch():
 		"""
 		"""
 		self._shortlist = ContactHeap(target_id, k)
-		self._shortlist.push_all(self.initiator.find_nearest_neightbours(target_id))
-		log.debug(f"Creating search with peers: {self._shortlist}")
+		self._shortlist.push_all(contacts)
+		log.debug(f"Creating search with peers: {contacts}")
 		"""
 		"""
 		self._k_val = k
@@ -106,8 +106,7 @@ class KademliaSearch():
 
 		# loop until we have found the node, we have queried k nodes or all
 		# responses returned were not closer then our closest yet
-		while not self._finished and (self._contaced.size() <= self._k_val)\
-							 and (prev_closest_node is not self._closest_node):
+        while not self._finished and (self._contaced.size() <= self._k_val):
 			peers_to_contact = []
 			if (distance_to(self._target_id, self._closest_node.getId())\
 					 >= distance_to(self._target_id, self._shortlist.peek_first()[1])):
@@ -131,9 +130,8 @@ class KademliaSearch():
 			prev_closest_node = self._closest_node
 
 		if not result:
-			log.debug("error in KademliaSearch: returned None but the search finished")
+			log.error("ERROR in KademliaSearch: returned None but the search finished")
 		return result
-
 
 
 
@@ -147,8 +145,8 @@ class KademliaNodeSearch(KademliaSearch):
 	"""
 
 
-	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
-		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
+	def __init__(self, initiator, protocol, target_id, contacts, k=p.params['k'], alpha=p.params['alpha']):
+		KademliaSearch.__init__(self, initiator, protocol, target_id, contacts, k, alpha)
 		"""
 		"""
 
@@ -218,8 +216,8 @@ class KademliaValueSearch(KademliaSearch):
 	"""
 
 
-	def __init__(self, initiator, protocol, target_id, k=p.params['k'], alpha=p.params['alpha']):
-		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
+	def __init__(self, initiator, protocol, target_id, contacts, k=p.params['k'], alpha=p.params['alpha']):
+		KademliaSearch.__init__(self, initiator, protocol, target_id, contacts, k, alpha)
 		"""
 		"""
 		self._iterative_store_candidates = ContactHeap(target_id, k)
@@ -270,6 +268,7 @@ class KademliaValueSearch(KademliaSearch):
 					values_found.append(response.get_data())
 					log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._targetid}:{resonse.get_data()}")
 				else:
+                    # TODO
 					self._shortlist.push_all(response.get_data())
 					self._iterative_store_candidates.push(sender_info)
 		# if the value is found perform an iterative store if possible and return the value
@@ -290,7 +289,7 @@ class KademliaValueSearch(KademliaSearch):
 					return (self._finished, value)	
 			log.warning(f"{self._initiator.getId()}'s iterative store failed because either no nodes to store on or\
 							no nodes responded")
-			return(False, value)
+			return(True, value)
 		
 		# search failed
 		if not self._finished and self._contacted.size() >= k:
@@ -313,11 +312,11 @@ class KandemliaStoreSearch(KademliaSearch):
 	"""
 
 
-	def __init__(self, initiator, protocol, target_id, key, value, k=p.params['k'], alpha=p.params['alpha']):
-		KademliaSearch.__init__(self, initiator, protocol, target_id, k, alpha)
+	def __init__(self, initiator, protocol, target_id, value, contacts, k=p.params['k'], alpha=p.params['alpha']):
+		KademliaSearch.__init__(self, initiator, protocol, target_id, contacts, k, alpha)
 		"""
 		"""
-		self._key = key
+		self._key = target_id
 		"""
 		"""
 		self._value = value
@@ -398,27 +397,33 @@ class RPCResponse():
 
     Parameters
     ----------
-    response : tuple
- 		A tuple of the success/failer of the response and the data received.
+    response : list 
+ 		A list of the success/failure of the response and the data received.
     """ 
     def __init__(self, response):
-        self._response = response
-        """
-        """
+        self._happened = response[0]
+        if isinstance(str, response[1]):
+            self._data = response[1]
+        else:
+            self._data = [ tuple_to_contact(x) for x in response[1:] ]
+
+
+    def tuple_to_contact(self, tuple):
+        return Contact(tuple[0], tuple[1], tuple[2])
 
 
     def has_happened(self):
         """
         Returns true if there was a response, false otherwise.
         """
-        return self._response[0]
+        return self._happened
 
 
     def get_data(self):
         """
         Gets the data in the response.
         """
-        return self._response[1]
+        return self._data
 
 
 
@@ -437,8 +442,4 @@ class RPCValueResponse(RPCResponse):
 		"""
 		Checks if the data received is a list of contacts or some values
 		"""
-		if isinstance(list, this.get_data()):
-			if isinstance(Contact, this.get_data()[0])
-				return False
-
-		return True
+        return this._happened and isinstance(str, self._data)

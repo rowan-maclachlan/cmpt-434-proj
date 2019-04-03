@@ -129,7 +129,8 @@ class Node():
             return [ True, { hashkey : value } ]
         store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
-        return await store_search.search(self.protocol.try_find_close_nodes)
+        responses = await store_search.search(self.protocol.try_find_close_nodes)
+        return True in response.values()
 
 
     def tuple_to_contact(self, tuple):
@@ -166,14 +167,7 @@ class Node():
             return [ False, None ]
 
         value_search = KademliaValueSearch(self.me, self.protocol, hashkey, neighbours)
-        response = await value_search.search(try_find_value)
-        if response[0]:
-            if isinstance(response[1], str):
-                return response
-        else:
-            # We got a list of nodes but no value.  Map the returned tuple list
-            # into a list of Contacts
-            return [ False, [ tuple_to_contact(x) for x in response[1:] ] ]
+        return await value_search.search(self.protocol)
             
 
     async def bootstrap(self, ip, port):
