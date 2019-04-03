@@ -210,6 +210,8 @@ class KademliaNodeSearch(KademliaSearch):
         else:
             return (False, [])
 
+
+
 class KademliaValueSearch(KademliaSearch):
     """
     Finds a node with the value matching the key and returns the value. Also performs 
@@ -218,8 +220,8 @@ class KademliaValueSearch(KademliaSearch):
 
     Attributes
     ----------
-    _iterative_target : :class: `Node`
-        The candidate for the iterative store.
+    _iterative_store_candidates : :class: `Node`
+        The candidates for an iterative store.
     """
 
 
@@ -275,31 +277,33 @@ class KademliaValueSearch(KademliaSearch):
                     values_found.append(response.get_data())
                     log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._targetid}:{resonse.get_data()}")
                 else:
-                    # TODO
                     self._shortlist.push_all(response.get_data())
                     self._iterative_store_candidates.push(sender_info)
-        # if the value is found perform an iterative store if possible and return the value
+        # If the value is returned by a node, an iterative store should take place from
+        # choosing the closest node that has not returned a value to us. i.e. the closest
+        # node to the node that has the key:value pair that we know doesn't have the key:value
+        # pair stored already.
+        value = None
         if values_found:
             value = values_found[0]
             self._finished = True
-            istore_target = None
-            while len(self._iterative_store_candidates) > 0:
-                # perform iterative store until it is successful
+            # make sure there is actually a candidate for the iterative store first
+            if len(self._iterative_store_candidates) > 0:
                 istore_target = self._iterative_store_candidates.pop()
-                log.debug(f"performing iterative store on {istore_target}")
+                log.debug(f"{self._initiator.getId()} performing iterative store on {istore_target}")
                 response = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
-                # checking if store was successful
-                if not response.has_happened():
-                    log.warning(f"{self._initiator.getId()}'s iterative store failed because {istore_target} did not respond")
-                else:
+                # Checking if store was successful. If the store was not successful try to store again
+                # on the next best candidate in the heap of candidates in the next iteration of the while loop.
+                if response.has_happened():
                     log.info(f"{istore_target} stored {value}")
-                    return (self._finished, value)  
-            log.warning(f"{self._initiator.getId()}'s iterative store failed because either no nodes to store on or\
-                            no nodes responded")
-            return(True, value)
-        
-        # search failed
-        if not self._finished and (len(self._contacted) >= self._k_val or not len(self._shortlist) > 0):
+                else:
+                    log.error(f"iterative store {istore_target.getId()} failed due to timemout")
+        if self._finished:
+            return (True, value)    
+        # search finished but did not find the value, returns k closest contacts
+        # to the key
+        if len(self._contacted) >= self._k_val or not len(self._shortlist) > 0:
+            self._finished = True
             return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
         # continue
         return None
