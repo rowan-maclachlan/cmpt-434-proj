@@ -168,7 +168,8 @@ class Node():
             return [ False, None ]
 
         value_search = KademliaValueSearch(self.me, self.protocol, hashkey, neighbours)
-        return await value_search.search(self.protocol)
+        responses = await value_search.search(self.protocol.try_find_value)
+        return responses[0]
             
 
     async def bootstrap(self, ip, port):

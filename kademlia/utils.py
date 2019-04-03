@@ -48,7 +48,7 @@ def merge_heaps(heap1, heap2, n_ell):
         else:
             merged_list.append(heap2.pop()) 
 
-    if heap1.size() == 0:
+    if heap1.size()  == 0:
         while heap2.size() > 0 and len(merged_list) < n_ell:
             merged_list.append(heap2.pop())
     else:

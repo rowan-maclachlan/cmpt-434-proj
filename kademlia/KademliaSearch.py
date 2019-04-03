@@ -179,7 +179,6 @@ class KademliaNodeSearch(KademliaSearch):
         (successful, k_closest) : tuple
         search_in_progress : boolean
         """ 
-        print(responses_to_handle)
         for sender_info, response in responses_to_handle:
             log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
             response = RPCResponse(response)
@@ -266,7 +265,7 @@ class KademliaValueSearch(KademliaSearch):
 
         for sender_info, response in responses_to_handle:
             response = RPCValueResponse(response)
-            del(self._active_queries[sender_info.getId()])
+            del(self._active_queries[sender_info])
 
             if response.has_happened():
                 self._contacted.push(sender_info)
@@ -299,7 +298,7 @@ class KademliaValueSearch(KademliaSearch):
             return(True, value)
         
         # search failed
-        if not self._finished and self._contacted.size() >= k and self._shortlist.size() == 0:
+        if not self._finished and (self._contacted.size() >= self._k_val or not self._shortlist.size() > 0):
             return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
         # continue
         return None
@@ -392,7 +391,7 @@ class KademliaStoreSearch(KademliaSearch):
             for peer_contact in closest_contacts:
                 active_queries[peer_contact.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
             responses = await gather_responses(active_queries)
-            return (False, responses)
+            return (True, responses)
         else:
             return None
 
