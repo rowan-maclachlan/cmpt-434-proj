@@ -7,6 +7,7 @@ from kademlia.Contact import Contact
 from kademlia.KademliaSearch import KademliaSearch
 from kademlia.KademliaSearch import KademliaStoreSearch
 from kademlia.KademliaSearch import KademliaValueSearch
+from kademlia.KademliaSearch import KademliaNodeSearch
 import kademlia.params as p
 import kademlia.hashing as h
 
@@ -109,7 +110,6 @@ class Node():
         ------
         TODO What do we return here?
         """
-        # TODO HIGH PRIORITY
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
@@ -133,8 +133,7 @@ class Node():
         store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
         responses = await store_search.search(self.protocol.try_find_close_nodes)
-        print(responses)
-        return True in responses.values()
+        return responses[0]
 
 
     async def get(self, key):
@@ -154,6 +153,8 @@ class Node():
         """
         # TODO HIGH PRIORITY
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
+        if type(key) is not str:
+            raise TypeError("The key we use MUST be a string!")
 
         hashkey = h.hash_function(key)
 
@@ -197,9 +198,10 @@ class Node():
         # TODO perform a search for myself... Do a node find on self.me.getId()
         # TODO this is not quite right...  The spec seems to be suggesting
         # something different than this.
-        response = await self.protocol.try_find_close_nodes(new_contact, self.me)
-        # TODO we need to refresh on contact responses?
-        return response
+        store_search = KademliaNodeSearch(self.me, self.protocol, self.me.getId(), [ new_contact ] )
+        responses = await store_search.search(self.protocol.try_find_close_nodes)
+        print(responses)
+        return responses[0]
 
     async def ping(self, ip, port):
         address = (ip, int(port))

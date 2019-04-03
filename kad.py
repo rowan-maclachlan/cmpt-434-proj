@@ -40,7 +40,7 @@ async def do_ping(node, ip, port):
 def handle_input(node):
     args = ""
     prompt()
-    args = sys.stdin.readline().split(" ")
+    args = sys.stdin.readline().rstrip().split(" ")
     
     cmd = args[0].rstrip()
     print(f"Attempting to run {cmd}...")

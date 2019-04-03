@@ -103,7 +103,7 @@ class RoutingTable(object):
         return self.get_bucket(contact.getId()).remove(contact)
 
 
-    def find_nearest_neighbours(self, id):
+    def find_nearest_neighbours(self, id, exclude=None, how_many=None):
         """
         Find and return the K nearest Contacts to the ID provided.  Sort all
         the contact bucket entries according to distance from the provided ID,
@@ -114,21 +114,27 @@ class RoutingTable(object):
         ----------
         id : int
             The digest value for which we want to find the k nearest neighbours
+        exclude : Contact
+            Which contact we wish to exclude from the search, if Any
 
         Return
         ------
         [Contact] : A list of Contacts.  These are the K nearest contacts in this
         routing table to the ID provided.
         """
+        n = how_many if how_many is not None else self.k
         # TODO improve? Remember that buckets correspond to distance
         # collect all bucket entries, sort all bucket entries
         nearest_neighbours = []
         # flatten all contacts into one list
         all_contacts = [ el for lst in self.buckets for el in lst.getSorted() ]
+        # filter out the contact we want to exclude
+        if exclude is not None:
+            all_contacts = filter(lambda x : x.getId() != exclude.getId(), all_contacts)
         # sort contacts according to distance from ID
         sorted_contacts = sorted(all_contacts, key=(lambda x: x.getId() ^ id))
         # Retrieve the closest K contacts 
-        return sorted_contacts[:self.k] 
+        return sorted_contacts[:n] 
 
 
     def get_bucket(self, id):

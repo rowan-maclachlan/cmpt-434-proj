@@ -34,6 +34,8 @@ class KademliaSearch():
         The protocol used for finding nodes. 
     target_id : intorsomething
         The id of the node being searched for.
+    contacts : [Contact]
+        A list of :class: `Contact`
     k : int
         The maximum number of nodes queried or returned from a query.
     alpha : int
