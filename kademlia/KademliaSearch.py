@@ -199,7 +199,7 @@ class KademliaNodeSearch(KademliaSearch):
 							return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		# we failed ~(`-.-`)~ 
 		if not finished and self._contacted.size() >= self._k_val:
-			return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
+			return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
 		else:
 			return None
 
@@ -290,11 +290,11 @@ class KademliaValueSearch(KademliaSearch):
 					return (self._finished, value)	
 			log.warning(f"{self._initiator.getId()}'s iterative store failed because either no nodes to store on or\
 							no nodes responded")
-			return(False, None)
+			return(False, value)
 		
 		# search failed
 		if not self._finished and self._contacted.size() >= k:
-			return (self._finished, merge_heaps(self._contacted, self._shortlist, self._k_val))
+			return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
 		# continue
 		return None
 
