@@ -181,7 +181,7 @@ class Node():
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
         # TODO perform a search for myself... Do a node find on self.me.getId()
-        return await self.protocol.try_find_close_nodes(new_contact, self.me)
+        return await self.protocol.try_find_close_nodes(new_contact, self.me.getId())
 
 
     async def ping(self, ip, port):

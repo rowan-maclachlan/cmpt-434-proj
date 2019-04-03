@@ -139,28 +139,28 @@ class Protocol(RPCProtocol):
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
-        source = Contact(id, sender[0], sender[1])
+        source = Contact(senderId, sender[0], sender[1])
         handle_node(source)
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
         return nearest_neighbours
 
 
-    async def try_find_close_nodes(self, contact, targetContact):
+    async def try_find_close_nodes(self, contact, target):
         """
-        Try to find the node 'targetContact' by sending an RPC to the node
+        Try to find the node 'targetContactId' by sending an RPC to the node
         'contact'.
 
         Parameters
         ---------
         contact : Contact
             The contact we would like to send the find node RPC to.
-        targetContact : Contact
-            The contact we would like to find.
+        targetId : int 
+            The ID of the contact we would like to find.
 
         """
-        print(f"Looking for {targetContact} by asking {contact}")
+        print(f"Looking for {targetd} by asking {contact}")
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_close_nodes(address, self.this_node.getId(), targetContact.getId())
+        response = await self.find_close_nodes(address, self.this_node.getId(), targetId)
         return self.handle_response(response, contact)
 
 
