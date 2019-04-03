@@ -4,6 +4,9 @@ import logging
 from kademlia.Protocol import Protocol
 from kademlia.RoutingTable import RoutingTable 
 from kademlia.Contact import Contact
+from kademlia.KademliaSearch import KademliaSearch
+from kademlia.KademliaSearch import KademliaStoreSearch
+from kademlia.KademliaSearch import KademliaValueSearch
 import kademlia.params as p
 import kademlia.hashing as h
 
