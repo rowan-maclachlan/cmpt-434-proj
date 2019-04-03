@@ -52,9 +52,8 @@ class Protocol(RPCProtocol):
         int : The ID of this Kademlia node
         """
         log.info(f"rpc_ping: from {senderId} at {sender[0]}:{sender[1]}")
-        print("IM HEEEEERE")
         source = Contact(senderId, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         return self.this_node.getId()
     
 
@@ -92,9 +91,8 @@ class Protocol(RPCProtocol):
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_store: storing the value {value} at key {key}.")
-        source = Contact(id, sender[0], sender[1])
-        #handle_node(source)
-        print(value)
+        source = Contact(senderId, sender[0], sender[1])
+        self.handle_node(source)
         self.data[key] = value
         return True
 
@@ -140,9 +138,12 @@ class Protocol(RPCProtocol):
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_node: finding closest neighbours of node {targetId}")
         source = Contact(senderId, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
+        # TODO Don't return the source itself!
         nearest_neighbours = self.table.find_nearest_neighbours(targetId)
-        return nearest_neighbours
+        # Return a list of tuple(Contact) so that pmsgpack can successfully
+        # pack our Contact objects.
+        return list(map(tuple, nearest_neighbours))
 
 
     async def try_find_close_nodes(self, contact, target):
@@ -184,14 +185,13 @@ class Protocol(RPCProtocol):
 
         Returns
         -------
-        TODO how do we format this?
-        [Contact], str : A list of Contacts of up to size K, or a value which
-                is the string being sought
+        [Contact], str : A list of Contacts of up to size K, 
+                         the string being sought
         """
         log.debug(f"Got request from {senderId} at {sender[0]}:{sender[1]}")
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
-        handle_node(source)
+        self.handle_node(source)
         value = self.data[targetKey]
         if value is None:
             # If we do not have the value, return nodes which may have it 
@@ -245,7 +245,7 @@ class Protocol(RPCProtocol):
         else:
             log.debug(f"Received response from node {contact.getId()} "
                       f"at {contact.getIp()}:{contact.getPort()}")
-            handle_node(contact)
+            self.handle_node(contact)
             return response
 
 
@@ -279,7 +279,8 @@ class Protocol(RPCProtocol):
             # new node
             if len(nearest_contacts) < self.table.k:
                 log.debug(f"Few contacts, storing data to new contact...")
-                asyncio.ensure_future(self.try_store(contact, key, value))
+                # schedule the task in the event loop, continue to next data
+                asyncio.create_task(self.try_store(contact, key, value))
                 continue
             # If there are k neighbours, only store the key-value if the new
             # node is closer to the key the our neighbour furthest from the
@@ -298,6 +299,6 @@ class Protocol(RPCProtocol):
                 log.debug(f"Storing {data} to new contact...")
                 asyncio.ensure_future(self.try_store(contact, key, value))
 
-        self.table.add_contact(contact)
+        self.table.add(contact)
 
         return True

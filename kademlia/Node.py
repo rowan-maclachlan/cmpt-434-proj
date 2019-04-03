@@ -58,6 +58,8 @@ class Node():
         """
         Close network connections and terminate asyncio loops.
         """
+        # TODO close refresh loops here when applicable
+        # TODO but is this really necessary?
         if self._transport is not None:
             self._transport.close()
 
@@ -65,11 +67,20 @@ class Node():
     async def listen(self):
         """
         Listen for requests from other nodes.
+
+        Transports and Protocols are used by the low-level event loop APIs such
+        as loop.create_connection(). They use callback-based programming style
+        and enable high-performance implementations of network or IPC protocols
+        (e.g. HTTP).
         """
         loop = asyncio.get_event_loop()
         
         # Create endpoint with our Protocol, RPCProtocol and asyncio subclass
         # See self._create_protocol.  Set optional argument local_addr.
+        # self._create_protocol must be a callable returning a protocol
+        # implementation.
+        # local_addr is used to bind the socket to locally. The local_host and
+        # local_port are looked up using getaddrinfo().
         listen = loop.create_datagram_endpoint(
                 self._create_protocol, 
                 local_addr=(self._getHost(), self._getPort()))
@@ -95,6 +106,7 @@ class Node():
         ------
         TODO What do we return here?
         """
+        # TODO HIGH PRIORITY
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
@@ -111,7 +123,7 @@ class Node():
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
             log.error("This node has no record of any other nodes!")
-            log.info("Stored {value} at {self.me.getId()}")
+            log.info("Stored {value} at node {self.me}")
             self.data[hashkey] = value
             # TODO these reponses need to be unified and formatted the same
             return [ True, { hashkey : value } ]
@@ -121,6 +133,10 @@ class Node():
         # implementation now.
 
         return await self.protocol.try_store_value(neighbours[0], hashkey, value)
+
+
+    def tuple_to_contact(self, tuple):
+        return Contact(tuple[0], tuple[1], tuple[2])
 
 
     async def get(self, key):
@@ -138,6 +154,7 @@ class Node():
         ------
         str : The value the key maps to, or None if it is not found.
         """
+        # TODO HIGH PRIORITY
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
 
         hashkey = h.hash_function(key)
@@ -153,7 +170,14 @@ class Node():
 
         # TODO we need to successively query nodes we find closer and closer to
         # our key.
-        return [ False, None ]
+        response = await self.try_find_value(neighbours[0])
+        if response[0]:
+            if isinstance(response[1], str):
+                return response
+        else:
+            # We got a list of nodes but no value.  Map the returned tuple list
+            # into a list of Contacts
+            return [ False, [ tuple_to_contact(x) for x in response[1:] ] ]
             
 
     async def bootstrap(self, ip, port):
@@ -176,14 +200,24 @@ class Node():
         response = await self.protocol.ping(address, self.me.getId())
         if response[0]:
             log.info(f"Bootstrapping off of {ip}:{port}")
-            new_contact = Contact(response[1], ip, int(port))
+            new_contact = Contact(int(response[1]), ip, int(port))
         else:
             log.error(f"Failed to bootstrap off of {ip}:{port}")
             return
         # TODO perform a search for myself... Do a node find on self.me.getId()
-        return await self.protocol.try_find_close_nodes(new_contact, self.me.getId())
-
+        # TODO this is not quite right...  The spec seems to be suggesting
+        # something different than this.
+        response = await self.protocol.try_find_close_nodes(new_contact, self.me)
+        # TODO we need to refresh on contact responses?
+        return response
 
     async def ping(self, ip, port):
         address = (ip, int(port))
-        return await self.protocol.ping(address, self.me.getId())
+        response = await self.protocol.ping(address, self.me.getId())
+        if response[0]:
+            # They answered us with their ID...
+            new_contact = Contact(response[1], ip, int(port))
+            # So add they to our table!
+            self.table.add(new_contact)
+
+        return response # response is a (true/false, ID/None) tuple

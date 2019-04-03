@@ -21,22 +21,22 @@ def test_get_bucket():
 
     table = RoutingTable(b, k, 0)
 
-    assert table.add_contact(contact1)
+    assert table.add(contact1)
     assert contact1 in table
     assert len(table) == 1
     assert len(table.get_bucket(contact1.getId())) == 1
 
-    assert table.add_contact(contact2)
+    assert table.add(contact2)
     assert contact2 in table
     assert len(table) == 2
     assert len(table.get_bucket(contact2.getId())) == 1
 
-    assert table.add_contact(contact3)
+    assert table.add(contact3)
     assert contact3 in table
     assert len(table) == 3
     assert len(table.get_bucket(contact3.getId())) == 1
 
-    assert table.add_contact(contact4)
+    assert table.add(contact4)
     assert contact4 in table
     assert len(table) == 4
     assert len(table.get_bucket(contact4.getId())) == 1
@@ -52,12 +52,12 @@ def test_wont_add_self():
     
     table = RoutingTable(b, k, 0)
 
-    assert not table.add_contact(contact)
+    assert not table.add(contact)
     assert contact not in table
     assert len(table) == 0
 
 
-def test_add_contact():
+def test_add():
     b = p.params[p.B]
     k = p.params[p.K]
     ip = "127.0.0.1"
@@ -70,10 +70,35 @@ def test_add_contact():
 
     table = RoutingTable(b, k, 0)
 
-    assert table.add_contact(contact1)
-    assert table.add_contact(contact2)
-    assert table.add_contact(contact3)
-    assert table.add_contact(contact4)
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+    assert table.add(contact4)
+
+
+def test_remove_contact():
+    b = p.params[p.B]
+    k = p.params[p.K]
+    ip = "127.0.0.1"
+    port = 1234
+
+    contact1 = Contact(None, ip, port)
+    contact2 = Contact(None, ip, port)
+    contact3 = Contact(None, ip, port)
+    contact4 = Contact(None, ip, port)
+
+    table = RoutingTable(b, k, 0)
+
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+    assert table.add(contact4)
+
+    assert table.remove(contact1)
+    assert table.remove(contact2)
+    assert table.remove(contact3)
+    assert table.remove(contact4)
+    assert not table.remove(contact4)
 
 
 def test_find_nearest_neighbours():
@@ -98,14 +123,14 @@ def test_find_nearest_neighbours():
 
     table = RoutingTable(4, k, 0)
 
-    assert table.add_contact(contact1)
-    assert table.add_contact(contact2)
-    assert table.add_contact(contact3)
-    assert table.add_contact(contact4)
-    assert table.add_contact(contact5)
-    assert table.add_contact(contact6)
-    assert table.add_contact(contact7)
-    assert table.add_contact(contact8)
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+    assert table.add(contact4)
+    assert table.add(contact5)
+    assert table.add(contact6)
+    assert table.add(contact7)
+    assert table.add(contact8)
 
     nearest = table.find_nearest_neighbours(12)
     assert len(nearest) == 4
