@@ -128,7 +128,7 @@ class KademliaSearch():
                 log.debug("No longer finding closer nodes than before...")
                 for i in range(self._k_val):
                     peers_to_contact.append(self._shortlist.pop())
-            log.info(f"{self._initiator} preparing to contact: {peers_to_contact}")
+            log.debug(f"{self._initiator} preparing to contact: {peers_to_contact}")
             for peer in peers_to_contact:
                 self._active_queries[peer] = rpc_method(peer, self._target_id) 
             responses = await gather_responses(self._active_queries)

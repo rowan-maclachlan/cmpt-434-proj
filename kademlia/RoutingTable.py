@@ -11,6 +11,14 @@ class RoutingTable(object):
     class::RoutingTable
     Hold a p.params[B] KBuckets.  Each bucket has a max length of p.params[K].
     The contents of a bucket are class::Contact.
+    Attributes
+    ----------
+    b : int
+        The number of bucket bits.
+    k : int 
+        The number of entries per bucket
+    id : int
+        The ID of the Node that has this Routing Table 
     """
 
     def __init__(self, b, k, id):
