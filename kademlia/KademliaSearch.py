@@ -112,8 +112,10 @@ class KademliaSearch():
 
         # loop until we have found the node, we have queried k nodes or all
         # responses returned were not closer then our closest yet
-        while not self._finished and len(self._contacted) <= self._k_val and len(self._shortlist) > 0:
+        while not self._finished :
             peers_to_contact = []
+            # If the closest node we found is farther away than our current
+            # closest node, query the next k closest nodes
             if (distance_to(self._target_id, self._closest_node.getId())\
                     >= distance_to(self._target_id, self._shortlist.peek_first()[1].getId())):
                 self._closest_node = self._shortlist.peek_first()[1]
@@ -123,6 +125,7 @@ class KademliaSearch():
             else:
                 # if there are no closer nodes we search the nearest k nodes instead of a
                 # the nearest alpha 
+                log.debug("No longer finding closer nodes than before...")
                 for i in range(self._k_val):
                     peers_to_contact.append(self._shortlist.pop())
             log.info(f"{self._initiator} preparing to contact: {peers_to_contact}")
@@ -135,6 +138,7 @@ class KademliaSearch():
             result = await self._handle_responses(responses)
             prev_closest_node = self._closest_node
 
+        # ( boolean, str or list[Contacts] )
         if not result:
             log.error("ERROR in KademliaSearch: returned None but the search finished")
         return result
@@ -182,32 +186,29 @@ class KademliaNodeSearch(KademliaSearch):
         for sender_info, response in responses_to_handle:
             log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
             response = RPCResponse(response)
-            del(self._active_queries[sender_info.getId()])
+            del(self._active_queries[sender_info])
 
             if response.has_happened():
                 self._contacted.push(sender_info)
-                self._shortlist.push_all(response.get_data())
 
                 for peer_info in response.get_data():
+                    # If we found ourselves, set finished to true.  Then, we
+                    # process the other reponses
                     if peer_info.getId() == self._target_id:
+                        log.debug(f"Found target {self._target_id} in contact {sender_info}")
                         self._finished = True
-                        log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
-                        targets_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
-                                                    self._initiator, self._initiator.getId(), self._target_id))
-                         # check if the target node responded, if not just pass the k closest we have found already
-                        if targets_closest.has_happened():              
-                            self._shortlist.push_all(target_closest.get_data())
-                            return (self._finished, merge_heaps(self._shortlist, self._contacted, self._k_val))
-                        else:
-                            log.warning(f"{self._target_id} did not respond")
-                            return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
+                    else:
+                        # push peer info onto contact heap, continue to process
+                        # responses
+                        self._shortlist.push(peer_info)
         # we failed ~(`-.-`)~ 
-        if not finished and len(self._contacted) >= self._k_val and len(self._shortlist) == 0:
+        if self._finished:
+            return (True, merge_heaps(self._shortlist, self._contacted, self._k_val))
+        elif len(self._contacted) <= self._k_val and len(self._shortlist) > 0:
+            self._finished = True
             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         else:
-            return None
-
-
+            return (False, [])
 
 class KademliaValueSearch(KademliaSearch):
     """
