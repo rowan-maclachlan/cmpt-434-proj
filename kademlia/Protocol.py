@@ -192,14 +192,11 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
-        value = self.data[targetKey]
-        if value is None:
+        if self.data.key() == targetKey:
+            value = self.data[targetKey]
+        else:
             # If we do not have the value, return nodes which may have it 
             return self.rpc_find_close_nodes(sender, senderId, targetKey)
-        else:
-            # If we do have the value, we can return it.
-            # TODO how does rpcudp handle this return value?
-            return value 
 
 
     async def try_find_value(self, contact, targetKey):

@@ -24,7 +24,7 @@ async def do_get(node, key):
 
 async def do_set(node, key, value):
     result = await node.put(key, value)
-    if result[0]:
+    if result:
         print(f"Stored {key}:{value} on the Kademlia network.")
     else:
         print(f"Failed to store {key}:{value} on the Kademlia network.")
@@ -40,8 +40,7 @@ async def do_ping(node, ip, port):
 def handle_input(node):
     args = ""
     prompt()
-    args = sys.stdin.readline().split(" ")
-    
+    args = sys.stdin.readline().rstrip().split(" ")
     cmd = args[0].rstrip()
     print(f"Attempting to run {cmd}...")
     try:

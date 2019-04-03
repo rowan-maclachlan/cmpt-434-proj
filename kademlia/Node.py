@@ -133,8 +133,7 @@ class Node():
         store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
         responses = await store_search.search(self.protocol.try_find_close_nodes)
-        print(responses)
-        return True in responses.values()
+        return responses[0]
 
 
     async def get(self, key):
@@ -154,7 +153,7 @@ class Node():
         """
         # TODO HIGH PRIORITY
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
-
+        
         hashkey = h.hash_function(key)
 
         if hashkey in self.data:
@@ -167,7 +166,8 @@ class Node():
             return [ False, None ]
 
         value_search = KademliaValueSearch(self.me, self.protocol, hashkey, neighbours)
-        return await value_search.search(self.protocol)
+        responses = await value_search.search(self.protocol.try_find_value)
+        return responses[0]
             
 
     async def bootstrap(self, ip, port):
