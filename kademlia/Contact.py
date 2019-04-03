@@ -217,7 +217,10 @@ class ContactHeap():
         ------
         tuple : the distance and the closest contact to the node id
         """
-        return self._heap[0]
+        if len(self._heap) == 0:
+            return None
+        else:
+            return self._heap[0]
 
 
     def contains(self, contact):

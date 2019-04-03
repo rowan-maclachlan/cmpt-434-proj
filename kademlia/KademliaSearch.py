@@ -6,6 +6,7 @@ from kademlia.Contact import Contact
 from kademlia.Contact import ContactHeap
 from kademlia.utils import gather_responses
 from kademlia.utils import distance_to
+from kademlia.utils import merge_heaps
 import kademlia.params as p
 
 log = logging.getLogger(__name__)
@@ -109,7 +110,7 @@ class KademliaSearch():
 
         # loop until we have found the node, we have queried k nodes or all
         # responses returned were not closer then our closest yet
-        while not self._finished and (self._contacted.size() <= self._k_val):
+        while not self._finished and self._contacted.size() <= self._k_val and self._shortlist.size() > 0:
             peers_to_contact = []
             if (distance_to(self._target_id, self._closest_node.getId())\
                     >= distance_to(self._target_id, self._shortlist.peek_first()[1].getId())):
@@ -176,6 +177,7 @@ class KademliaNodeSearch(KademliaSearch):
         (successful, k_closest) : tuple
         search_in_progress : boolean
         """ 
+        print(responses_to_handle)
         for sender_info, response in responses_to_handle:
             log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
             response = RPCResponse(response)
@@ -199,7 +201,7 @@ class KademliaNodeSearch(KademliaSearch):
                             log.warning(f"{self._target_id} did not respond")
                             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         # we failed ~(`-.-`)~ 
-        if not finished and self._contacted.size() >= self._k_val:
+        if not finished and self._contacted.size() >= self._k_val and self._shortlist.size() == 0:
             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         else:
             return None
@@ -295,7 +297,7 @@ class KademliaValueSearch(KademliaSearch):
             return(True, value)
         
         # search failed
-        if not self._finished and self._contacted.size() >= k:
+        if not self._finished and self._contacted.size() >= k and self._shortlist.size() == 0:
             return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
         # continue
         return None
@@ -353,7 +355,7 @@ class KademliaStoreSearch(KademliaSearch):
         for sender_info, response in responses_to_handle:
             log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
             response = RPCResponse(response)
-            del(self._active_queries[sender_info.getId()])
+            del(self._active_queries[sender_info])
             
             if response.has_happened():
                 self._contacted.push(sender_info)
@@ -381,12 +383,12 @@ class KademliaStoreSearch(KademliaSearch):
                              StoreSearch. StoreSearch failed.")
                             return (False, None)
         # we failed ~(`-.-`)~ 
-        if not finished and self._contacted.size() >= self._k_val:
+        if not self._finished and (self._contacted.size() >= self._k_val or not self._shortlist.size() > 0):
             closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
             log.debug(f"(failure) {self._target_id} sending store requests to {closest_contacts}")
             active_queries = {}
             for peer_contact in closest_contacts:
-                active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
+                active_queries[peer_contact.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
             responses = await gather_responses(active_queries)
             return (False, responses)
         else:
@@ -405,10 +407,11 @@ class RPCResponse():
     """ 
     def __init__(self, response):
         self._happened = response[0]
-        if isinstance(str, response[1]):
+        if isinstance(response[1], str):
             self._data = response[1]
-        else:
-            self._data = [ tuple_to_contact(x) for x in response[1:] ]
+        elif isinstance(response[1], list):
+            print(response[1])
+            self._data = [ tuple_to_contact(x) for x in response[1][1:] ]
 
 
     def tuple_to_contact(self, tuple):
@@ -446,3 +449,7 @@ class RPCValueResponse(RPCResponse):
         Checks if the data received is a list of contacts or some values
         """
         return this._happened and isinstance(str, self._data)
+
+
+def tuple_to_contact(tuple):
+    return Contact(tuple[0], tuple[1], tuple[2])

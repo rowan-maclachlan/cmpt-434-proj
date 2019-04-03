@@ -133,11 +133,8 @@ class Node():
         store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
         responses = await store_search.search(self.protocol.try_find_close_nodes)
-        return True in response.values()
-
-
-    def tuple_to_contact(self, tuple):
-        return Contact(tuple[0], tuple[1], tuple[2])
+        print(responses)
+        return True in responses.values()
 
 
     async def get(self, key):
