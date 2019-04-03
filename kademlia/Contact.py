@@ -247,7 +247,7 @@ class ContactHeap():
         -------
         numEll : int
         """
-        return self._heap.size()
+        return len(self._heap)
 
 
     def get_heap(self):

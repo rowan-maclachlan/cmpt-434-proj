@@ -1,9 +1,11 @@
 import sys
 import logging
+import asyncio
 
 from kademlia.Contact import Contact
 from kademlia.Contact import ContactHeap
 from kademlia.utils import gather_responses
+from kademlia.utils import distance_to
 import kademlia.params as p
 
 log = logging.getLogger(__name__)
@@ -79,7 +81,7 @@ class KademliaSearch():
         self._alpha = alpha
         """
         """
-        self._closest_node = self._shortlist.peekFirst()
+        self._closest_node = self._shortlist.peek_first()[1]
         """
         """
         self._contacted = ContactHeap(target_id, k)
@@ -107,10 +109,10 @@ class KademliaSearch():
 
         # loop until we have found the node, we have queried k nodes or all
         # responses returned were not closer then our closest yet
-        while not self._finished and (self._contaced.size() <= self._k_val):
+        while not self._finished and (self._contacted.size() <= self._k_val):
             peers_to_contact = []
             if (distance_to(self._target_id, self._closest_node.getId())\
-                     >= distance_to(self._target_id, self._shortlist.peek_first()[1])):
+                    >= distance_to(self._target_id, self._shortlist.peek_first()[1].getId())):
                 self._closest_node = self._shortlist.peek_first()[1]
 
                 for i in range(self._alpha):

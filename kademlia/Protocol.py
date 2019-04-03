@@ -146,9 +146,9 @@ class Protocol(RPCProtocol):
         return list(map(tuple, nearest_neighbours))
 
 
-    async def try_find_close_nodes(self, contact, target):
+    async def try_find_close_nodes(self, contact, targetId):
         """
-        Try to find the node 'targetContactId' by sending an RPC to the node
+        Try to find the node 'targetId' by sending an RPC to the node
         'contact'.
 
         Parameters
@@ -159,7 +159,7 @@ class Protocol(RPCProtocol):
             The ID of the contact we would like to find.
 
         """
-        print(f"Looking for {targetd} by asking {contact}")
+        print(f"Looking for {targetId} by asking {contact}")
         address = (contact.getIp(), contact.getPort())
         response = await self.find_close_nodes(address, self.this_node.getId(), targetId)
         return self.handle_response(response, contact)
