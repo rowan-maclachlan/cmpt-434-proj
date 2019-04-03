@@ -27,7 +27,7 @@ async def gather_responses(query_dict):
     results = await asyncio.gather(*queries)
     return tuple(zip(query_dict.keys(),  results))
 
-    
+
 def merge_heaps(heap1, heap2, n_ell):
     """
     Merges heap1 and heap2 together creating a single list of length len.

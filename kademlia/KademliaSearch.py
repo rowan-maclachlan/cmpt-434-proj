@@ -2,7 +2,8 @@ import sys
 import logging
 import asyncio
 
-from kademlia.Node import Node
+from kademlia.Contact import Contact
+from kademlia.Contact import ContactHeap
 from kademlia.utils import gather_responses
 from kademlia.utils import distance_to
 import kademlia.params as p
@@ -188,7 +189,7 @@ class KademliaNodeSearch(KademliaSearch):
                     if peer_info.getId() == self._target_id:
                         self._finished = True
                         log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
-                         targets_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
+                        targets_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
                                                     self._initiator, self._initiator.getId(), self._target_id))
                          # check if the target node responded, if not just pass the k closest we have found already
                         if targets_closest.has_happened():              
@@ -301,7 +302,7 @@ class KademliaValueSearch(KademliaSearch):
 
 
 
-class KandemliaStoreSearch(KademliaSearch):
+class KademliaStoreSearch(KademliaSearch):
     """
     Does a Node Search but instead of returning all nodes it sends a store rpc to each node with 
     the given data.
@@ -384,7 +385,7 @@ class KandemliaStoreSearch(KademliaSearch):
             closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
             log.debug(f"(failure) {self._target_id} sending store requests to {closest_contacts}")
             active_queries = {}
-            for peer_contact in :
+            for peer_contact in closest_contacts:
                 active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
             responses = await gather_responses(active_queries)
             return (False, responses)
