@@ -287,26 +287,24 @@ class KademliaValueSearch(KademliaSearch):
         if values_found:
             value = values_found[0]
             self._finished = True
+            istore_target = self._iterative_store_candidates.pop()
             # make sure there is actually a candidate for the iterative store first
-            if len(self._iterative_store_candidates) > 0:
-                istore_target = self._iterative_store_candidates.pop()
+            if not istore_target:
                 log.debug(f"{self._initiator.getId()} performing iterative store on {istore_target}")
-                response = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
-                # Checking if store was successful. If the store was not successful try to store again
-                # on the next best candidate in the heap of candidates in the next iteration of the while loop.
-                if response.has_happened():
+                istore = RPCValueResponse(await self._protocol.try_store_value(istore_target, self._target_id, value))
+                if istore.has_happened():
                     log.info(f"{istore_target} stored {value}")
                 else:
                     log.error(f"iterative store {istore_target.getId()} failed due to timemout")
         if self._finished:
             return (True, value)    
         # search finished but did not find the value, returns k closest contacts
-        # to the key
+        # to the key given
         if len(self._contacted) >= self._k_val or not len(self._shortlist) > 0:
             self._finished = True
             return (False, merge_heaps(self._contacted, self._shortlist, self._k_val))
-        # continue
-        return None
+        # continue the search
+        return (False, [])
 
 
 
@@ -365,40 +363,29 @@ class KademliaStoreSearch(KademliaSearch):
             
             if response.has_happened():
                 self._contacted.push(sender_info)
-                self._shortlist.push_all(response.get_data())
-
+                # Check each respoonse to see if it is the target_id. If it is not
+                # then it gets added to the shortlist.
                 for peer_info in response.get_data():
                     if peer_info.getId() == self._target_id:
-                        log.debug(f"{sender_info} sent {self._initiator.getId()} {self._targetid}")
                         self._finished = True
-                        target_closest = RPCResponse(await self._protocol.try_find_close_nodes(\
-                                                    self._initiator,self._initiator.getId(), self._target_id))
-                        if target_closest.has_happened():
-                            self._shortlist.push_all(target_closest.get_data())
-                            closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
-                            log.debug(f"(success) {self._target_id} sending store requests to {closest_contacts}")
-
-                            active_queries = {}
-                            for peer_contact in closest_contacts:
-                                active_queries[peer.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
-                            responses = await gather_responses(active_queries)
-
-                            return (True, responses)
-                        else:
-                            log.warning(f"{self._target_id} did not respond in {self.initiator.getId()}\
-                             StoreSearch. StoreSearch failed.")
-                            return (False, None)
-        # we failed ~(`-.-`)~ 
-        if not self._finished and (len(self._contacted) >= self._k_val or not len(self._shortlist) > 0):
+                    else:
+                        self._shortlist.push(peer_info)
+        # Whether the search completes or the node is found the resulting actions
+        # are the same: a store is performed using the value passed in on the k-closest
+        # nodes that have been found.
+        if self._finished or len(self._contacted) >= self._k_val or not len(self._shortlist) > 0:
+            # Because this flag is used to exit the search and could not have been set
+            # if we didn't find the target id, it must be set here
+            self._finished = True
             closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
-            log.debug(f"(failure) {self._target_id} sending store requests to {closest_contacts}")
+            log.debug(f"{self._target_id} sending store requests to {closest_contacts}")
             active_queries = {}
             for peer_contact in closest_contacts:
                 active_queries[peer_contact.getId()] = self._protocol.try_store_value(peer_contact, self._key, self._value)
-            responses = await gather_responses(active_queries)
-            return (True, responses)
+            await gather_responses(active_queries)
+            return (False, )
         else:
-            return None
+            return (False, [])
 
 
 

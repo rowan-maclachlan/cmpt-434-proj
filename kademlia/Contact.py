@@ -198,8 +198,8 @@ class ContactHeap():
         :class: `Contact` : the popped contact
         """
         if not self._heap:
-            log.debug("popped from empty heap")
-            return
+            log.debug("popped from an empty heap")
+            return None
 
         popped_contact = heapq.heappop(self._heap)[1]
         del self._node_dict[popped_contact.getId()]
