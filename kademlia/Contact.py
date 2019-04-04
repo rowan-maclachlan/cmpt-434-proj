@@ -206,10 +206,27 @@ class ContactHeap():
 
         return popped_contact
 
+
     def empty(self):
+        """
+        Check if this short list is empty.
+
+        Return
+        ------
+        boolean : True if it is empty, False otherwise 
+        """
         return 0 >= len(self._heap)
 
+
     def pop_all(self, num_to_pop): 
+        """
+        Pop up to num_to_pop contacts from the heap, and returns them as an
+        ordered list.
+
+        Return
+        ------
+        [:class: `Contact`] : The list of popped contacts
+        """
         contacts = [] 
         while not self.empty() and num_to_pop > 0: 
             contacts.append(self.pop()) 

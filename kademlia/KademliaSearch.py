@@ -202,7 +202,7 @@ class KademliaNodeSearch(KademliaSearch):
         # we failed ~(`-.-`)~ 
         if self._finished:
             return (True, merge_heaps(self._shortlist, self._contacted, self._k_val))
-        elif len(self._contacted) >= self._k_val or not len(self._shortlist) > 0:
+        elif len(self._contacted) >= self._k_val or len(self._shortlist) <= 0:
             self._finished = True
             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         else:
