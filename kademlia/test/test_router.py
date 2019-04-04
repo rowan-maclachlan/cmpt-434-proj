@@ -82,10 +82,10 @@ def test_remove_contact():
     ip = "127.0.0.1"
     port = 1234
 
-    contact1 = Contact(None, ip, port)
-    contact2 = Contact(None, ip, port)
-    contact3 = Contact(None, ip, port)
-    contact4 = Contact(None, ip, port)
+    contact1 = Contact(1, ip, port)
+    contact2 = Contact(2, ip, port)
+    contact3 = Contact(3, ip, port)
+    contact4 = Contact(4, ip, port)
 
     table = RoutingTable(b, k, 0)
 

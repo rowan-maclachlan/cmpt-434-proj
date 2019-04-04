@@ -1,5 +1,3 @@
 rpcudp
-sphinx
 asyncio
 pytest
-sortedcontainers

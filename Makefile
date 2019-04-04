@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = python3.7 -m sphinx
+SPHINXBUILD   = python3 -m sphinx
 SOURCEDIR     = docs/source
 BUILDDIR      = docs/_build
 
@@ -19,4 +19,4 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 init:
-	python3.7 -m pip3.7 install --user -r requirements.txt
+	python3 -m pip install --user -r requirements.txt

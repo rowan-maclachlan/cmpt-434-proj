@@ -57,7 +57,7 @@ def handle_input(node):
         elif cmd == "quit":
             raise KeyboardInterrupt
         else:
-            print(f"{cmd} is not a valid command.")
+            print(f"{cmd} is not a valid command.  Try again.")
     except IndexError:
         # Handle poorly formed commands
         print("Invalid command.  Try again.")
