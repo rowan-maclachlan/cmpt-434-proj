@@ -276,10 +276,10 @@ class KademliaValueSearch(KademliaSearch):
                     values_found.append(response.get_data())
                     log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._target_id}:{response.get_data()}")
                 else:
+                    self._iterative_store_candidates.push(sender_info)
                     for peer_info in response.get_data():
                         if not peer_info in self._contacted:
                             self._shortlist.push(peer_info)
-                    self._iterative_store_candidates.push(sender_info)
         # If the value is returned by a node, an iterative store should take place from
         # choosing the closest node that has not returned a value to us. i.e. the closest
         # node to the node that has the key:value pair that we know doesn't have the key:value
@@ -379,6 +379,9 @@ class KademliaStoreSearch(KademliaSearch):
             # Because this flag is used to exit the search and could not have been set
             # if we didn't find the target id, it must be set here
             self._finished = True
+            # we want to include ourselves as a potential candidate for the store if we are 
+            # one of the k-closest
+            self._contacted.push(self._initiator)
             closest_contacts = merge_heaps(self._shortlist, self._contacted, self._k_val)
             log.debug(f"{self._target_id} sending store requests to {closest_contacts}")
             active_queries = {}
