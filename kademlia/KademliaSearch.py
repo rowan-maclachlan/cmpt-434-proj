@@ -198,7 +198,7 @@ class KademliaNodeSearch(KademliaSearch):
                     else:
                         # push peer info onto contact heap if it has not been contacted, continue to process
                         # responses
-                        if peer_info.getId() in self._contacted:
+                        if not peer_info in self._contacted:
                             self._shortlist.push(peer_info)
         # we failed ~(`-.-`)~ 
         if self._finished:
@@ -276,7 +276,9 @@ class KademliaValueSearch(KademliaSearch):
                     values_found.append(response.get_data())
                     log.debug(f"(success) {sender_info} sent {self._initiator.getId()} {self._target_id}:{response.get_data()}")
                 else:
-                    self._shortlist.push_all(response.get_data())
+                    for peer_info in response.get_data():
+                        if not peer_info in self._contacted:
+                            self._shortlist.push(peer_info)
                     self._iterative_store_candidates.push(sender_info)
         # If the value is returned by a node, an iterative store should take place from
         # choosing the closest node that has not returned a value to us. i.e. the closest
