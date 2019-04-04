@@ -200,9 +200,8 @@ class Node():
         # TODO perform a search for myself... Do a node find on self.me.getId()
         # TODO this is not quite right...  The spec seems to be suggesting
         # something different than this.
-        store_search = KademliaNodeSearch(self.me, self.protocol, self.me.getId(), [ new_contact ] )
-        responses = await store_search.search(self.protocol.try_find_close_nodes)
-        print(responses)
+        node_search = KademliaNodeSearch(self.me, self.protocol, self.me.getId(), [ new_contact ] )
+        responses = await node_search.search(self.protocol.try_find_close_nodes)
         return responses[0]
 
     async def ping(self, ip, port):

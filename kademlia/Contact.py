@@ -206,6 +206,17 @@ class ContactHeap():
 
         return popped_contact
 
+    def empty(self):
+        return 0 >= len(self._heap)
+
+    def pop_all(self, num_to_pop): 
+        contacts = [] 
+        while not self.empty() and num_to_pop > 0: 
+            contacts.append(self.pop()) 
+            num_to_pop -= 1
+                                           
+        return contacts
+
 
     def peek_first(self):
         """
