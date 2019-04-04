@@ -268,8 +268,8 @@ class Protocol(RPCProtocol):
         # new node than they are to us.
         log.info(f"Adding node {contact.getId()} to our routing table...")
 
-        for key, value in self.data:
-            log.debug(f"Consider storing {value}...")
+        for key in self.data:
+            log.debug(f"Consider storing {self.data[key]}...")
             # find neighbours close to the key value
             nearest_contacts = self.table.find_nearest_neighbours(key)
             # If there are fewer than k neighbours, store the key-value to the
@@ -277,7 +277,7 @@ class Protocol(RPCProtocol):
             if len(nearest_contacts) < self.table.k:
                 log.debug(f"Few contacts, storing data to new contact...")
                 # schedule the task in the event loop, continue to next data
-                asyncio.create_task(self.try_store(contact, key, value))
+                #self.try_store(contact, key, self.data[key])
                 continue
             # If there are k neighbours, only store the key-value if the new
             # node is closer to the key the our neighbour furthest from the
@@ -294,7 +294,7 @@ class Protocol(RPCProtocol):
                     contact.distance(key) < furthest_contact.distance(key) 
             if close_enough_to_store and were_nearest:
                 log.debug(f"Storing {data} to new contact...")
-                asyncio.ensure_future(self.try_store(contact, key, value))
+                #self.try_store(contact, key, self.data[key])
 
         self.table.add(contact)
 
