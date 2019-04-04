@@ -180,7 +180,11 @@
                 other nodes on the overlay network despite being located behind
                 a NAT.  This requires the use of a NAT traversal technique such
                 as Hole-Punching or SOCKS (Socket Secure) to overcome the
-                difficulties inherent in routing requests through NATs.
+                difficulties inherent in routing requests through NATs.  This
+                makes application use on LANs behind a router address difficult
+                without port-forwarding and configuration overhead.  Because of
+                this, our application was tested only on a LAN.
+
                 Our primary investigation showed other Kademlia
                 implementations using the core python library asyncio to manage
                 callback procedures for asyncronous code execution. While the
@@ -200,7 +204,8 @@
 
             \subsubsection{hashing}
                 Kademlia specifies the use of the 160-bit SHA-1 hash for data,
-                and 160-bit node IDs and 160 k-buckets, to accompany that.
+                and 160-bit node IDs and 160
+                \code{k-buckets}\ref{bucket_design}, to accompany that.
                 This parameter of ID and hash length, however, is not mandated.
                 The python library hashlib provides an array of hashing
                 functions, cryptographic and otherwise, including the SHA-1
@@ -210,16 +215,7 @@
                 small to increase ease-of-testing and provide more
                 comprehensible and tractable output during development stages.
                 It can easily be changed later.
-            \subsubsection{Routing Table Design}
-            \subsubsection{Bucket Design}
-        \subsection{Kademlia Remote Procedure Calls}
-            \subsubsection{Store}
-            \subsubsection{Find Value}
-            \subsubsection{Find Node}
-            \subsubsection{Ping}
-            \subsubsection{Finding Nodes on the Network}
-
-\begin{lstlisting}[label=hashing.py]
+\begin{lstlisting}[label=hashing]
 def hash_function(data):
     """
     Hash the data to a byte array of length p.params[B] / 8
@@ -235,6 +231,131 @@ def hash_function(data):
         
     return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
 \end{lstlisting}
+            
+            As shown here, the returned digest is AND'ed with a mask --- this
+            mask is the length of the system-wide hash/ID bit length value ---
+            called `B' in the Kademlia paper.  This mask then truncates the
+            sha1 hash of the data to a value between 0 and $2^b-1$.  This
+            allows the value of `B' to be effortlessly changed for more
+            practical use of the network or for larger-scale simulations.
+
+            \subsubsection{Routing Table Design} \label{routing_table_design}
+                Study of different Kademlia
+                implementations\cite{implementation_01}\cite{implementation_02}\cite{implementation_03}\cite{implementation_04}
+                reveal that most implementations implement their routing table
+                in a way very similar to that described in the Kademlia white
+                paper\cite{kademlia}.  This involves creating nodes with only a
+                single \code{k-bucket}\ref{bucket_design}.  As the k-bucket
+                reaches capacity, it is then split into two and its contents
+                distributed among the two resultant buckets according to their
+                proximity to the node that owns the routing table.  In this
+                sense, a routing table may not actually have as many
+                \code{k-bucket}s
+                in memory as there are bits in the keyspace.  Naturally, this
+                is far more space efficient than the implementation we opted
+                for.
+
+                As the maximum number of \code{k-bucket}s on any particular
+                node is simply the length of the ID space, they can all be
+                created at once, as such:
+\begin{lstlisting}[label=RoutingTable.__init__]
+self.buckets = [ KBucket(k) for _ in range(b) ]
+\end{lstlisting}
+                Instead of attempting to insert nodes into a \code{k-bucket}
+                which may or may not be full and which may result in further
+                operations on the data structure, nodes can be inserted
+                directly into the \code{k-bucket} corresponding to their
+                distance from the routing table's owner, as such:
+\begin{lstlisting}[label=RoutingTable.add]
+return self.get_bucket(contact.getId()).add(contact)
+\end{lstlisting}
+                where the method \code{RoutingTable.get\_bucket(id)} calculates
+                the correct bucket index by referencing the most significant
+                bit of the distance between the ID of the routing table's owner
+                and the ID of the contact we are trying to add to the routing
+                table, like so:
+\begin{lstlisting}[label=RoutingTable.get_bucket]
+distance = self.id ^ id
+index = 0
+while distance > 1:
+    # Count the index of the largest bit in the distance
+    # The distance will be zero after 'bit' many shifts.
+    distance = distance >> 1
+    index += 1
+return self.buckets[index]
+\end{lstlisting}
+                Naturally, \code{k-bucket}s can be retrieved in a similar
+                manner.
+                
+                Although this approach is less space efficent than creating
+                \code{k-bucket}s only as needed, the overhead is fixed and
+                relatively small.  Ultimately, this decision was made because
+                it was believed to be simpler.
+
+            \subsubsection{Bucket Design} \label{bucket_design}
+                The \code{k-bucket} is a container
+                that holds contact information for other nodes on the Kademlia
+                network.  Each \code{k-bucket} is created with a maximum
+                capacity of \code{k}, a system-wide parameter that controls for
+                such things as \code{k-bucket} size.  In our implementation, it
+                is simply a light wrapper for a list into which contacts are
+                stored.
+                
+                As described by the white
+                paper, \code{k-bucket}s, once full, need to make evaluations
+                about whether new contacts are inserted in the \code{k-bucket}
+                or not after it has reached capacity.  When a new node is
+                discovered but its \code{k-bucket} is full, it is only added if
+                the node at the head of the list is unresponsive.  Otherwise,
+                the new node is simply discarded, and the responsive node is
+                moved from the head to the tail of the list.
+
+                There are a variety of reasons for this behaviour.  First, the
+                Kademlia authors illustrate that nodes which have existed on
+                the network for a long time are statistically more likely to
+                continue being active on the network than new nodes.
+                Therefore, the integrity of the network as a whole is improved
+                by prioritizing these old nodes.  Secondly, this behaviour
+                makes the network automatically resistant to Denial-of-Service
+                attacks: the network cannot be brought down by flooding it with
+                new nodes, because the old network will not replace legitimate
+                nodes that already exist in its routing table unless they
+                become unresponsive.
+
+                Unfortunately, our implementation does not track node
+                responsiveness, as the minimum-viable-product was simpler if
+                new nodes are simply added (because they are known to be
+                active) and old nodes are kicked out of the routing table.
+
+\begin{lstlisting}[label=KBucket.add]
+if contact in self.contacts:
+    # If this contact already appears in the list, move it to the back
+    # of the list
+    self.contacts.remove(contact)
+    self.contacts.append(contact)
+elif not self.full():
+    # If the contact doesn't appear in the list, append it.
+    self.contacts.append(contact)
+else:
+    # If the list is full, remove the oldest contact before appending
+    # the new one.
+    self.contacts.popleft()
+    self.contacts.append(contact)
+return True
+\end{lstlisting}
+            Because most operation on the \code{k-bucket} involve adding and
+            removing nodes from the beginning and end of the list, a
+            special-use data structure was employed to optimize the efficiency
+            of these operations.  Python provides a structure called a `deque'
+            (pronounced `deck') that implements constant-time additions and
+            removals from the head and tail of the list.
+
+        \subsection{Kademlia Remote Procedure Calls}
+            \subsubsection{Store}
+            \subsubsection{Find Value}
+            \subsubsection{Find Node}
+            \subsubsection{Ping}
+            \subsubsection{Finding Nodes on the Network}
 
     \section{Measurements and Criteria}
     As referenced in the implementation plan, there are quantitative
