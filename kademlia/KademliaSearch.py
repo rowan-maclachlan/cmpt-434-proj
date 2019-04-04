@@ -196,9 +196,10 @@ class KademliaNodeSearch(KademliaSearch):
                         log.debug(f"Found target {self._target_id} in contact {sender_info}")
                         self._finished = True
                     else:
-                        # push peer info onto contact heap, continue to process
+                        # push peer info onto contact heap if it has not been contacted, continue to process
                         # responses
-                        self._shortlist.push(peer_info)
+                        if peer_info.getId() in self._contacted:
+                            self._shortlist.push(peer_info)
         # we failed ~(`-.-`)~ 
         if self._finished:
             return (True, merge_heaps(self._shortlist, self._contacted, self._k_val))
@@ -367,7 +368,8 @@ class KademliaStoreSearch(KademliaSearch):
                     if peer_info.getId() == self._target_id:
                         self._finished = True
                     else:
-                        self._shortlist.push(peer_info)
+                        if not peer_info in self._contacted:
+                            self._shortlist.push(peer_info)
         # Whether the search completes or the node is found the resulting actions
         # are the same: a store is performed using the value passed in on the k-closest
         # nodes that have been found.
