@@ -202,7 +202,7 @@ class KademliaNodeSearch(KademliaSearch):
         # we failed ~(`-.-`)~ 
         if self._finished:
             return (True, merge_heaps(self._shortlist, self._contacted, self._k_val))
-        elif len(self._contacted) <= self._k_val and len(self._shortlist) > 0:
+        elif len(self._contacted) >= self._k_val or not len(self._shortlist) > 0:
             self._finished = True
             return (False, merge_heaps(self._shortlist, self._contacted, self._k_val))
         else:
@@ -359,7 +359,6 @@ class KademliaStoreSearch(KademliaSearch):
             log.info(f"processing {sender_info.getId()}'s data in {self._initiator.getId()}'s search")
             response = RPCResponse(response)
             del(self._active_queries[sender_info])
-            
             if response.has_happened():
                 self._contacted.push(sender_info)
                 # Check each respoonse to see if it is the target_id. If it is not
@@ -402,8 +401,7 @@ class RPCResponse():
         if isinstance(response[1], str):
             self._data = response[1]
         elif isinstance(response[1], list):
-            print(response[1])
-            self._data = [ tuple_to_contact(x) for x in response[1][1:] ]
+            self._data = [ tuple_to_contact(x) for x in response[1][0:] ]
 
 
     def tuple_to_contact(self, tuple):
@@ -443,5 +441,6 @@ class RPCValueResponse(RPCResponse):
         return self._happened and isinstance( self._data, str)
 
 
-def tuple_to_contact(tuple):
-    return Contact(tuple[0], tuple[1], tuple[2])
+def tuple_to_contact(tuple_info):
+    print(tuple_info)
+    return Contact(tuple_info[0], tuple_info[1], tuple_info[2])

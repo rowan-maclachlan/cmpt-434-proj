@@ -25,10 +25,10 @@ class Contact():
         The port that the host listens on
     """
 
-    def __init__(self, id, ip, port):
-        if id is None:
-            id = h.new_id() 
-        self._id = id
+    def __init__(self, node_id, ip, port):
+        if node_id is None:
+            node_id = h.new_id() 
+        self._id = node_id
         self._ip = ip
         self._port = port
 
@@ -199,7 +199,7 @@ class ContactHeap():
         """
         if not self._heap:
             log.debug("popped from an empty heap")
-            return None
+            return
 
         popped_contact = heapq.heappop(self._heap)[1]
         del self._node_dict[popped_contact.getId()]
@@ -232,6 +232,23 @@ class ContactHeap():
             return None
         else:
             return self._heap[0]
+
+
+    def get(self, num_ells):
+        """
+        Attempts to get num_ells elements from the top the heap. If there
+        are less than num_ells of elements on the heap returns all
+        that it can and no more in a list.
+
+        Parameters
+        ----------
+        num_ells : int
+            The number of elements you wish to retrieve from the heap.
+        """
+        elements = []
+        while len(elements) < num_ells and len(self) > 0 :
+            elements.append(self.pop())
+        return elements
 
 
     def __contains__(self, contact):
