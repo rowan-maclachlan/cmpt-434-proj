@@ -260,7 +260,7 @@ class Protocol(RPCProtocol):
         Return : Boolean
             True if they were a new node, and false otherwise
         """
-        if contact in self.table:
+        if contact in self.table or self.this_node.getId() == contact.getId():
             log.debug(f"Node {contact.getId()} is already in our routing table.")
             return False
         # See Kademlia paper section 2.5 on how to incorporate new nodes.
