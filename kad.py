@@ -14,7 +14,7 @@ def prompt():
 ################################################################################
 async def do_get(node, key):
     result = await node.get(key)
-    if result[0] and isinstance(result[1], str):
+    if result and isinstance(result[1], str):
         print(f"Found {key}:{result[1]} on the Kademlia network.")
     elif result[0]:
         print("Failed to find {key} on the Kademlia network:  Found:\n"\
@@ -24,7 +24,7 @@ async def do_get(node, key):
 
 async def do_set(node, key, value):
     result = await node.put(key, value)
-    if result[0]:
+    if result:
         print(f"Stored {key}:{value} on the Kademlia network.")
     else:
         print(f"Failed to store {key}:{value} on the Kademlia network.")
@@ -40,8 +40,7 @@ async def do_ping(node, ip, port):
 def handle_input(node):
     args = ""
     prompt()
-    args = sys.stdin.readline().split(" ")
-    
+    args = sys.stdin.readline().rstrip().split(" ")
     cmd = args[0].rstrip()
     print(f"Attempting to run {cmd}...")
     try:
@@ -57,6 +56,8 @@ def handle_input(node):
             print(str(node.table))
         elif cmd == "quit":
             raise KeyboardInterrupt
+        else:
+            print(f"{cmd} is not a valid command.")
     except IndexError:
         # Handle poorly formed commands
         print("Invalid command.  Try again.")

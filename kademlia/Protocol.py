@@ -140,28 +140,28 @@ class Protocol(RPCProtocol):
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
         # TODO Don't return the source itself!
-        nearest_neighbours = self.table.find_nearest_neighbours(targetId)
+        nearest_neighbours = self.table.find_nearest_neighbours(targetId, exclude=source)
         # Return a list of tuple(Contact) so that pmsgpack can successfully
         # pack our Contact objects.
         return list(map(tuple, nearest_neighbours))
 
 
-    async def try_find_close_nodes(self, contact, targetContact):
+    async def try_find_close_nodes(self, contact, targetId):
         """
-        Try to find the node 'targetContact' by sending an RPC to the node
+        Try to find the node 'targetId' by sending an RPC to the node
         'contact'.
 
         Parameters
         ---------
         contact : Contact
             The contact we would like to send the find node RPC to.
-        targetContact : Contact
-            The contact we would like to find.
+        targetId : int 
+            The ID of the contact we would like to find.
 
         """
-        print(f"Looking for {targetContact} by asking {contact}")
+        log.info(f"Looking for {targetId} by asking {contact}")
         address = (contact.getIp(), contact.getPort())
-        response = await self.find_close_nodes(address, self.this_node.getId(), targetContact.getId())
+        response = await self.find_close_nodes(address, self.this_node.getId(), targetId)
         return self.handle_response(response, contact)
 
 
@@ -192,14 +192,11 @@ class Protocol(RPCProtocol):
         log.info(f"rpc_find_value: finding value associated with {targetKey}")
         source = Contact(senderId, sender[0], sender[1])
         self.handle_node(source)
-        value = self.data[targetKey]
-        if value is None:
+        if targetKey in self.data:
+            return self.data[targetKey]
+        else:
             # If we do not have the value, return nodes which may have it 
             return self.rpc_find_close_nodes(sender, senderId, targetKey)
-        else:
-            # If we do have the value, we can return it.
-            # TODO how does rpcudp handle this return value?
-            return value 
 
 
     async def try_find_value(self, contact, targetKey):
@@ -263,7 +260,7 @@ class Protocol(RPCProtocol):
         Return : Boolean
             True if they were a new node, and false otherwise
         """
-        if contact in self.table:
+        if contact in self.table or self.this_node.getId() == contact.getId():
             log.debug(f"Node {contact.getId()} is already in our routing table.")
             return False
         # See Kademlia paper section 2.5 on how to incorporate new nodes.
@@ -271,7 +268,7 @@ class Protocol(RPCProtocol):
         # new node than they are to us.
         log.info(f"Adding node {contact.getId()} to our routing table...")
 
-        for key, value in self.data:
+        for key, value in self.data.items():
             log.debug(f"Consider storing {value}...")
             # find neighbours close to the key value
             nearest_contacts = self.table.find_nearest_neighbours(key)
@@ -280,7 +277,7 @@ class Protocol(RPCProtocol):
             if len(nearest_contacts) < self.table.k:
                 log.debug(f"Few contacts, storing data to new contact...")
                 # schedule the task in the event loop, continue to next data
-                asyncio.create_task(self.try_store(contact, key, value))
+                asyncio.create_task(self.try_store_value(contact, key, value))
                 continue
             # If there are k neighbours, only store the key-value if the new
             # node is closer to the key the our neighbour furthest from the
@@ -297,7 +294,7 @@ class Protocol(RPCProtocol):
                     contact.distance(key) < furthest_contact.distance(key) 
             if close_enough_to_store and were_nearest:
                 log.debug(f"Storing {data} to new contact...")
-                asyncio.ensure_future(self.try_store(contact, key, value))
+                asyncio.create_task(self.try_store_value(contact, key, value))
 
         self.table.add(contact)
 

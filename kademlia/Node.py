@@ -4,6 +4,10 @@ import logging
 from kademlia.Protocol import Protocol
 from kademlia.RoutingTable import RoutingTable 
 from kademlia.Contact import Contact
+from kademlia.KademliaSearch import KademliaSearch
+from kademlia.KademliaSearch import KademliaStoreSearch
+from kademlia.KademliaSearch import KademliaValueSearch
+from kademlia.KademliaSearch import KademliaNodeSearch
 import kademlia.params as p
 import kademlia.hashing as h
 
@@ -106,7 +110,6 @@ class Node():
         ------
         TODO What do we return here?
         """
-        # TODO HIGH PRIORITY
         log.info(f"Attempting to store {value} on the Kademlia network...")
         if type(value) is not str:
             raise TypeError("The value you attempt to store MUST be a string!")
@@ -118,7 +121,7 @@ class Node():
         # Kademlia spec suggests that we should make calls to 'alpha' node per
         # iteration.  TODO take params out of class and inject them all
         # instead?
-        neighbours = self.table.find_nearest_neighbours(hashkey)[:p.params[p.ALPHA]]
+        neighbours = self.table.find_nearest_neighbours(hashkey, how_many=p.params[p.ALPHA])
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
@@ -127,16 +130,11 @@ class Node():
             self.data[hashkey] = value
             # TODO these reponses need to be unified and formatted the same
             return [ True, { hashkey : value } ]
-        # TODO this should not be only our known neighbours - we should query
-        # them for closer contacts.
-        # We need to implement the "Node Lookup" portion of the Kademlia
-        # implementation now.
+        log.debug(f"seeding with {neighbours}")
+        store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
-        return await self.protocol.try_store_value(neighbours[0], hashkey, value)
-
-
-    def tuple_to_contact(self, tuple):
-        return Contact(tuple[0], tuple[1], tuple[2])
+        responses = await store_search.search(self.protocol.try_find_close_nodes)
+        return responses[0]
 
 
     async def get(self, key):
@@ -156,6 +154,8 @@ class Node():
         """
         # TODO HIGH PRIORITY
         log.info(f"Attempting to retrieve the value of {key} from the Kademlia network.")
+        if type(key) is not str:
+            raise TypeError("The key we use MUST be a string!")
 
         hashkey = h.hash_function(key)
 
@@ -168,16 +168,9 @@ class Node():
             log.error("This node has no record of any other nodes!")
             return [ False, None ]
 
-        # TODO we need to successively query nodes we find closer and closer to
-        # our key.
-        response = await self.try_find_value(neighbours[0])
-        if response[0]:
-            if isinstance(response[1], str):
-                return response
-        else:
-            # We got a list of nodes but no value.  Map the returned tuple list
-            # into a list of Contacts
-            return [ False, [ tuple_to_contact(x) for x in response[1:] ] ]
+        value_search = KademliaValueSearch(self.me, self.protocol, hashkey, neighbours)
+        responses = await value_search.search(self.protocol.try_find_value)
+        return responses
             
 
     async def bootstrap(self, ip, port):
@@ -207,9 +200,9 @@ class Node():
         # TODO perform a search for myself... Do a node find on self.me.getId()
         # TODO this is not quite right...  The spec seems to be suggesting
         # something different than this.
-        response = await self.protocol.try_find_close_nodes(new_contact, self.me)
-        # TODO we need to refresh on contact responses?
-        return response
+        node_search = KademliaNodeSearch(self.me, self.protocol, self.me.getId(), [ new_contact ] )
+        responses = await node_search.search(self.protocol.try_find_close_nodes)
+        return responses[0]
 
     async def ping(self, ip, port):
         address = (ip, int(port))

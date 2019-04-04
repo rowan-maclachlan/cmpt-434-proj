@@ -144,3 +144,124 @@ def test_find_nearest_neighbours():
     assert contact2 not in nearest
     assert contact1 not in nearest
 
+def test_find_nearest_neighbours_with_exclude():
+    """
+    Add 8 contacts to the routing table.
+    Assert that when we call find nearest with some ID, we get 4 of those
+    contacts which are nearest to the function's argument.
+    """
+
+    k = 4
+    ip = "127.0.0.1"
+    port = 1234
+
+    contact1 = Contact(1, ip, port)
+    contact2 = Contact(2, ip, port)
+    contact3 = Contact(3, ip, port)
+    contact4 = Contact(4, ip, port)
+    contact5 = Contact(8, ip, port)
+    contact6 = Contact(9, ip, port)
+    contact7 = Contact(10, ip, port)
+    contact8 = Contact(11, ip, port)
+
+    table = RoutingTable(4, k, 0)
+
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+    assert table.add(contact4)
+    assert table.add(contact5)
+    assert table.add(contact6)
+    assert table.add(contact7)
+    assert table.add(contact8)
+
+    nearest = table.find_nearest_neighbours(12, exclude=contact8)
+    assert len(nearest) == 4
+
+    assert contact8 not in nearest
+    assert contact7 in nearest
+    assert contact6 in nearest
+    assert contact5 in nearest
+    assert contact4 in nearest
+    assert contact3 not in nearest
+    assert contact2 not in nearest
+    assert contact1 not in nearest
+
+def test_find_nearest_neighbours_with_how_many():
+    """
+    Add 8 contacts to the routing table.
+    Assert that when we call find nearest with some ID, we get 4 of those
+    contacts which are nearest to the function's argument.
+    """
+
+    k = 4
+    ip = "127.0.0.1"
+    port = 1234
+
+    contact1 = Contact(1, ip, port)
+    contact2 = Contact(2, ip, port)
+    contact3 = Contact(3, ip, port)
+    contact4 = Contact(4, ip, port)
+    contact5 = Contact(8, ip, port)
+    contact6 = Contact(9, ip, port)
+    contact7 = Contact(10, ip, port)
+    contact8 = Contact(11, ip, port)
+
+    table = RoutingTable(4, k, 0)
+
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+    assert table.add(contact4)
+    assert table.add(contact5)
+    assert table.add(contact6)
+    assert table.add(contact7)
+    assert table.add(contact8)
+
+    nearest = table.find_nearest_neighbours(12, how_many=3)
+    assert len(nearest) == 3
+
+    # 1100 ^ 1011 = 0111 <- contact 8
+    # 1100 ^ 1010 = 0110 <- contact 7
+    assert contact8 not in nearest
+    assert contact7 in nearest
+    assert contact6 in nearest
+    assert contact5 in nearest
+    assert contact4 not in nearest
+    assert contact3 not in nearest
+    assert contact2 not in nearest
+    assert contact1 not in nearest
+
+
+def test_find_nearest_neighbours_again():
+    """
+    Add 8 contacts to the routing table.
+    Assert that when we call find nearest with some ID, we get 4 of those
+    contacts which are nearest to the function's argument.
+    """
+
+    k = 4
+    b = 16
+    ip = "127.0.0.1"
+    port = 1234
+
+    contact1 = Contact(49212, ip, port)
+    contact2 = Contact(31626, ip, port)
+    contact3 = Contact(3464, ip, port)
+
+
+    table = RoutingTable(16, k, 47978)
+
+    assert table.add(contact1)
+    assert table.add(contact2)
+    assert table.add(contact3)
+
+    nearest = table.find_nearest_neighbours(56405, how_many=3)
+    assert len(nearest) == 3
+
+    # 1100 ^ 1011 = 0111 <- contact 8
+    # 1100 ^ 1010 = 0110 <- contact 7
+    assert contact3 in nearest
+    assert contact2 in nearest
+    assert contact1 in nearest
+
