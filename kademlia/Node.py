@@ -121,7 +121,7 @@ class Node():
         # Kademlia spec suggests that we should make calls to 'alpha' node per
         # iteration.  TODO take params out of class and inject them all
         # instead?
-        neighbours = self.table.find_nearest_neighbours(hashkey)[:p.params[p.ALPHA]]
+        neighbours = self.table.find_nearest_neighbours(hashkey, how_many=p.params[p.ALPHA])
         if len(neighbours) == 0:
             # TODO If we have no other nodes on which to store it... shouldn't
             # we store it locally?
@@ -130,6 +130,7 @@ class Node():
             self.data[hashkey] = value
             # TODO these reponses need to be unified and formatted the same
             return [ True, { hashkey : value } ]
+        log.debug(f"seeding with {neighbours}")
         store_search = KademliaStoreSearch(self.me, self.protocol, hashkey, value, neighbours)
 
         responses = await store_search.search(self.protocol.try_find_close_nodes)

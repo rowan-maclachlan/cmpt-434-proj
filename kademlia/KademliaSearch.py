@@ -119,13 +119,14 @@ class KademliaSearch():
             if (distance_to(self._target_id, self._closest_node.getId())\
                     >= distance_to(self._target_id, self._shortlist.peek_first()[1].getId())):
                 self._closest_node = self._shortlist.peek_first()[1]
-                peers_to_contact = self._shortlist.get(self._alpha)
+
+                peers_to_contact.extend(self._shortlist.pop_all(self._alpha))
             else:
                 # if there are no closer nodes we search the nearest k nodes instead of a
                 # the nearest alpha 
                 log.debug("No longer finding closer nodes than before...")
-                peers_to_contact = self._shortlist.get(self._k_val)
-            log.info(f"{self._initiator} preparing to contact: {peers_to_contact}")
+                peers_to_contact.extend(self._shortlist.pop_all(self._k_val))
+            log.debug(f"{self._initiator} preparing to contact: {peers_to_contact}")
             for peer in peers_to_contact:
                 self._active_queries[peer] = rpc_method(peer, self._target_id) 
             responses = await gather_responses(self._active_queries)
