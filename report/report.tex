@@ -343,7 +343,7 @@ else:
     self.contacts.append(contact)
 return True
 \end{lstlisting}
-            Because most operation on the \code{k-bucket} involve adding and
+            Because most operations on the \code{k-bucket} involve adding and
             removing nodes from the beginning and end of the list, a
             special-use data structure was employed to optimize the efficiency
             of these operations.  Python provides a structure called a `deque'
@@ -356,6 +356,17 @@ return True
             \subsubsection{Find Node}
             \subsubsection{Ping}
             \subsubsection{Finding Nodes on the Network}
+	    	Searching on the Kademlia Network is done using a iterative, parrallel
+		algorithm. There are 2 parameters that control its function: alpha and k.
+		Alpha controls the number of parrallel calls active at once. K controls
+		the number of nodes returned by each query of a node and the number of 
+		nodes queried before the search terminates. The algorithm works by selecting 
+		the alpha closest nodes to the target and querying them for nodes or values.
+		These nodes then return their k closest nodes to the target or the target 
+		itself. This process is repeated until one of three conditions is met: k nodes
+		have been queried, the shortlist is empty, or we have found the target we were
+		searching for. Upon completion the calling node is returned either the k closest
+		nodes to the target we found or a value if the search was a value search.
 
     \section{Measurements and Criteria}
     As referenced in the implementation plan, there are quantitative
