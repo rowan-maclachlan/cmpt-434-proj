@@ -38,6 +38,11 @@
     identifierstyle=\color{black},
     stringstyle=\color{orange},
 }
+% For terminal output:
+\lstdefinestyle{DOS}{
+    backgroundcolor=\color{black},
+    basicstyle=\scriptsize\color{white}\ttfamily
+}
 \lstset{aboveskip=10pt,belowskip=10pt}
 \lstset{style=custom}
 % For inline code snippets.  use `\code{var = "Hello!"}`
@@ -455,7 +460,34 @@ return True
     As described in \ref{use}, using this script allows the user to make an
     evaluation of the system behaviour, robustness, and correctness.  Although
     no meaningful performance data are collected from this simulation, the
-    infrastructure is in place.  
+    infrastructure is in place.  Here is the result of running the
+    \code{inspect} command on a node used to bootstrapping 40 others:
+
+\begin{lstlisting}[language=bash]
+'set <key (str)> <value (str)>' to store data
+'get <value (str)>' to retrieve data
+'inspect' to view this node's state
+'quit' to leave
+
+Attempting to run inspect...
+Data for this node: {}
+Routing table for (38038,0.0.0.0,2000)
+10: deque([(37067,127.0.0.1,2011)], maxlen=4)
+11: deque([(38917,127.0.0.1,2014), (40255,127.0.0.1,2028), \
+        (40086,127.0.0.1,2038)], maxlen=4)
+12: deque([(35664,127.0.0.1,2019)], maxlen=4)
+13: deque([(41656,127.0.0.1,2026), (43503,127.0.0.1,2033), \
+        (45280,127.0.0.1,2035), (44437,127.0.0.1,2036)], maxlen=4)
+14: deque([(55477,127.0.0.1,2037), (61319,127.0.0.1,2040), \
+        (54538,127.0.0.1,2044), (49313,127.0.0.1,2049)], maxlen=4)
+15: deque([(27086,127.0.0.1,2046), (8111,127.0.0.1,2047), \
+        (32276,127.0.0.1,2048), (14986,127.0.0.1,2050)], maxlen=4)
+\end{lstlisting}
+
+    As we would expect, higher-index \code{k-buckets}s are fully populated,
+    while the fraction of nodes which reside within the close neighbourhood of
+    node 38038 is small.  As can be derived from the high-number
+    \code{k-bucket} index, the id-space of this simulation is $b=16$.
 
     \section{Technical Difficulties}
     Here, we list some of the technical considerations and their resolutions:
