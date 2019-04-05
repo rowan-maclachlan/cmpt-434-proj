@@ -449,5 +449,4 @@ class RPCValueResponse(RPCResponse):
 
 
 def tuple_to_contact(tuple_info):
-    print(tuple_info)
     return Contact(tuple_info[0], tuple_info[1], tuple_info[2])
