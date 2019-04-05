@@ -57,7 +57,7 @@
 	\titlepage{
 		\vspace*{150px} % Push down title
 		\centering % Centre title
-		{\large \sc A description of project concepts, milestones, and goals\\}
+		{\large \sc A Report on a Kademlia Implementation Attempt\\}
 		\vspace*{30px} % Push down sub text
 		\hrulefill \\
 		\vspace*{20px}
@@ -83,85 +83,71 @@
 	\tableofcontents
 	
 	\pagebreak
-	
-    \section{Proposal Requirements:}
-    For an implementation project, you should:
-    \begin{itemize}
-        \item Describe what concept or issue you intend to study. 
-        \item Describe the objectives of your investigation. 
-        \item Give a brief plan of what you will do to investigate the issue. 
-        \item Describe expected measurements or criteria by which you intend to
-            evaluate whether you've succeeded at your objective.
-    \end{itemize}
 
     \section{Introduction}
-    DHTs are similar in principle to a regular hash table in that they
-    provide the structure for fast retrieval of an object by referencing the
-    location of the object's hash value.  However, a distributed hash table is
-    stored across nodes in a network, and this introduces a variety of
-    complications involving node-lookup (finding the location of the stored data
-    from its hash in the network), ensuring data redundancy (what happens if a
-    node goes offline?), and data retrieval.  Although this technology is not
+    DHTs are similar in principle to a regular hash table in that they provide
+    the structure for fast retrieval of an object by referencing the location
+    of the object's hash value.  However, a distributed hash table is stored
+    across nodes in a network, and this introduces a variety of complications
+    involving node-lookup (finding the location of the stored data from its
+    hash in the network), ensuring data redundancy (what happens if a node goes
+    offline?), and data retrieval.  Although this technology is not
     \textit{new} by any standard, its continued use and development in various
-    fields of application makes it a suitable candidate for an implementation
-    project.
-    
+    fields makes it a suitable candidate for an implementation project.
+
+    Kademlia provided an excellent learning opportunity with respect to
+    practical network-related computer skills, the application of some course
+    theory (implementing application-layer communication across different
+    networks over UDP implies some difficulties with port-forwarding at the
+    route --- this is what NAT would help with,) and much deeper understanding
+    of the Kademlia protocol as well as an understanding of some of the issues
+    overlay networks (DHTs in particular) must deal with.
+   
     \section{Objectives}
-    We hope that by implementing a very simple version of a DHT and by demonstrating
-    its use on a small network we will become familiar with the issues
-    overcome by the more robust and mature DHT implementations.  As referenced above,
-    these issues are myriad and often difficult to solve, but not impossible.
-    By implementing an incremental plan to gradually roll out more complex features, new
-    features, or re-implement sub-systems of our application, we will minimize
-    risk so as to end up with a viable end-product for our presentation, while
-    also taking full advantage of every learning opportunity which presents
-    itself.
+    As referenced above, the problems presented by a DHT implementation are
+    myriad and often difficult to solve, but by no means impossible.  By implementing
+    an incremental plan to gradually roll out more complex features, taking
+    full advantage of existing libraries, and using a high-level and expressive
+    programming language, we managed to implement a DHT.  While this DHT does
+    not implement every particular directive of the Kademlia white paper
+    exactly (nor is every successfully implemented feature necessarily
+    bug-free), we managed to create an application that could be easily run and
+    could, without issue, support a small network of up to 8 devices.
 
-    \section{Directives}
-    The rough plan for our implementation project will be as follows:
-    \begin{enumerate}
-        \item Collect and collate relevant technical (algorithm descriptions,
-            source-code) and theoretical sources (papers) for the implementation
-            of DHTs.  This has already begun.
-        \item Divide the DHT into aspects.  Identify concerns such as hashing,
-            security, node discovery, redundancy, etc.  This has already begun.
-        \item Once the separate issues and their complexities are understood,
-            design a minimum-viable product for our implementation.  This MVP
-            should be modular and take advantage of as many pre-written
-            libraries as are available, while ignoring any details of a DHT
-            beyond its barest and least robust implementation.  It should also
-            take into consideration the test application we have in
-            mind.\footnote{Although it may not result in the most general
-            implementation, it is more important that the core concepts are
-            applied \textit{successfully} in our particular application.}
-        \item Once the MVP has been designed, identify aspects of it which can
-            be improved.  This will include things such as data redundancy
-            (storing hashed data at multiple nodes), caching, and node
-            deletion and addition (how is content from deleted nodes rehashed,
-            and how is load redistributed on node addition?).
-        \item Implement the MVP, keeping in mind the fact that a
-            modular design will make feature improvement and addition easier
-            than it would be in a poorly constructed monolithic design.
-        \item Once the MVP is implemented and we move onto more advanced
-            features, we have to consider the metrics and factors by which we
-            measure the effectiveness of our implementation.  What are its
-            drawbacks and restrictions?  How efficient is it at finding data on
-            the overweb (participating nodes on the internet)?  How efficiently is
-            data stored and updated?
-    \end{enumerate}
-
+    On one level, the implementation team is very happy with this result,
+    considering the considerable hours invested in research, implementation,
+    and testing.  Although we failed to produce a working proto-type with
+    enough left-over time to run large-scale tests (100's or more nodes), and
+    so could not collect meaningful data on DHT performance, we feel as though
+    the preliminary testing and class demo shows at least some acceptable level
+    of achievement.  While this may be dissappointing, it must be noted that
+    many excellent Kademlia implementations already exist, most of which
+    feature more finely-tuned, bugless, and efficient code.  In this sense,
+    simulation data would only have cemented an already clear understanding of
+    our implementations shortcomings.  Implementation decisions were almost
+    always made by giving far more weight to deadlines than to writing
+    performant code.
+    
+    More importantly, we exceeded our personal academic goals
+    --- with respect to interest and learning, the project was a complete
+    success.  
+    
     \section{Implementation}
         \subsection{Use}
             Using the program is relatively simple.  The project folder, once
             downloaded (either provided by the students or downloaded from the
-            GIT repository, which is currently private) has a simple
-            structure.  The source code is in the \code{kademlia} folder.  So
-            long as the user has a python3.7 (or greater) environment,
-            everything should work.
+            GIT repository
+            \href{https://github.com/rowan-maclachlan/cmpt-434-proj}{here}) has
+            a simple structure.  The source code is in the \code{kademlia}
+            folder.  So long as the user has a python3.7 (or greater)
+            environment, everything should work.
             \begin{itemize}
-                \item Run \code{make init}. This will install the application
+                \item \code{git clone
+                    https://github.com/rowan-maclachlan/cmpt-434-proj}
+                \item \code{cd cmpt-434-proj}
+                \item \code{make init}. This will install the application
                     dependencies.
-                \item run \code{python3 kad.py}.  This will launch a single
+                \item \code{python3 kad.py}.  This will launch a single
                     Kademlia node.  To see application use, run the program
                     without arguments.
                 \item Use command \code{set}, \code{get}, \code{ping}, and
@@ -202,7 +188,7 @@
                 network code." This is exactly the Kademlia
                 use-case.\cite{asyncio}
 
-            \subsubsection{hashing}
+            \subsubsection{Hashing}\label{hashing_design}
                 Kademlia specifies the use of the 160-bit SHA-1 hash for data,
                 and 160-bit node IDs and 160
                 \code{k-buckets}\ref{bucket_design}, to accompany that.
@@ -215,7 +201,7 @@
                 small to increase ease-of-testing and provide more
                 comprehensible and tractable output during development stages.
                 It can easily be changed later.
-\begin{lstlisting}[label=hashing]
+\begin{lstlisting}[label=hash_function]
 def hash_function(data):
     """
     Hash the data to a byte array of length p.params[B] / 8
@@ -239,7 +225,7 @@ def hash_function(data):
             allows the value of `B' to be effortlessly changed for more
             practical use of the network or for larger-scale simulations.
 
-            \subsubsection{Routing Table Design} \label{routing_table_design}
+            \subsubsection{Routing Table Design}\label{routing_table_design}
                 Study of different Kademlia
                 implementations\cite{implementation_01}\cite{implementation_02}\cite{implementation_03}\cite{implementation_04}
                 reveal that most implementations implement their routing table
@@ -292,7 +278,7 @@ return self.buckets[index]
                 relatively small.  Ultimately, this decision was made because
                 it was believed to be simpler.
 
-            \subsubsection{Bucket Design} \label{bucket_design}
+            \subsubsection{Bucket Design}\label{bucket_design}
                 The \code{k-bucket} is a container
                 that holds contact information for other nodes on the Kademlia
                 network.  Each \code{k-bucket} is created with a maximum
@@ -369,73 +355,165 @@ return True
     Rowan) or a more glorious success - or, perhaps, the real success is the
     friends we made along the way.
 
-    \section{Additional Details}
-    Here, we list some of the technical considerations we will have to resolve
-    in our implementation project:
+    \section{Technical Difficulties}
+    Here, we list some of the technical considerations and their resolutions:
     \begin{itemize}
-        \item How many nodes store the data of a single object?  We can start
-            with a single node on a network, but what do we want to achieve?
-            What degree of redundancy can be achieved and what overhead does
-            this add?
+        \item How many nodes store the data of a single object?  What degree of
+            redundancy can be achieved and what overhead does this add?
+            
+            The Kademlia paper invokes this concern, but does not provide any
+            hard-numbers.  According to the authors, this number must be high
+            enough that even on very difficult networks, no more than this
+            number of nodes in the same key-space go offline within an hour of
+            each other.  The authors provide a value of 20, but we tested with
+            a far smaller value so that correct behaviour could be more easily
+            observed.
+
         \item Is an entire object stored on each node, or do we distribute a
             single object in incomplete parts through the network?
+
+            Our implementation accepted only \code{String} types as keys and
+            values.  Regardless of the message type (node list, node id, key,
+            or value) the entire message is always transmitted in a single UDP
+            packet.  This limits message size to a theoretical value of 65,507
+            bytes minus the overhead incurred by the rpcudp library, but our
+            implementation did not account for messages sizes in any way.
+            Presumably, the user could crash their node by trying to store a
+            massive value.
+
         \item How large is the address space: how large are the hash keys?  128
             bits?  160 bits?  We may not need to have a large address space for
             our implementation, but just what are the consequences of this
             choice?
-        \item What kind of hash function do we use?  Do we use a
-            cryptographically secure hash function such as SHA-1 or SHA-2 or do
-            we use an unsecure hash function?  What consequences and benefits do
-            different approaches confer?
+
+            As described in \ref{hashing_design}, key-space size was easily adjustable
+            because of system design.  However, the decision was made during
+            implementation to keep the value small.  This made it easy to
+            manually verify correct network behaviour by calculating distances
+            by hand, as well as put more stress onto some system internals such
+            as \ref{bucket_design} and \ref{routing_table_design} which behave
+            differently depending on the density of nodes around the keyspace.
+
         \item Do we hash the object's identifier or the object data?  If we hash
             the identifier, how do we enforce unique identifiers?
+
+            Unique identifiers (keys) are not enforced.  If some aspect of
+            uniqueness was taken from the node attempting the store, their ID
+            or IP/port could be used to create a unique hash. However, This would
+            make it difficult for other nodes to request that data (as the hash
+            was created with some other node's identifying information.)  A
+            better solution would be to request the data mapped to by the
+            hash-key before attempting the store, and only allow the store if
+            the data was not found.  While this solution is not technically
+            difficult, it was deemed unimportant in relation to other features.
+
         \item Any hash function will have collisions.  How do we manage
             collisions?  Do we chain hash contents at the site of storage or do
             we dissallow colliding files?
+
+            Support for chaining hash-collisions was not implemented.  Data
+            storage was managed simply by Python's built-in dictionary type.
+            If there was a collision (highly possible on a test-network with a
+            smaller than usual key-space) the previous value would be
+            overwritten at the node performing the store.  This could be
+            avoided by the use of a more powerful container type, but it would
+            introduce other questions and corresponding technical issues.
+
+            When requesting a value from a key which maps to a node containing
+            chained occurences of that key, which value should be returned?
+            There's no way for the node recieving the request to know which
+            value the node making the request is after, so should it return
+            both values?  This would throw a wrench in the current
+            implementation of the \code{get} command, which does not expect
+            more than a single value response.
+
         \item How does the \textit{CAP} theorem (or \textit{Brewer} Theorem)
             inform our implementation? What does it mean for it to be impossible
             for a distributed system to provide all of Consistency,
             Availability, and Partition Tolerance?
-        \item What about the keyspace partitioning?  Is it possible for us to
-            avoid the issue of key-space re-mapping (changing the node location
-            of data) when adding or removing nodes from the network?\\
-            To better grasp this issue, consider the case where we use a direct
-            hashing method.  If there are $n$ nodes in the system, then we would
-            normally store object $o$ at the node $hash(o) \pmod n$.  When
-            someone wanted to look up object $o$, they would find it at node
-            $hash(o) \pmod n$.  However, if a node disappears and the number of
-            active nodes decreases by one, we can no longer find the object $o$
-            at $hash(o) \pmod n$.  The other side of this issue is to address how
-            objects stores at a node which dissappears are remapped to active
-            nodes.  Two separate possibilities to resolve this issue are
-            consistent hashing and rendezvous hashing.\\
-            Clearly, the hashing method and design we choose is a central
-            component and will have large ramifications for the rest of the
-            project.  As best we can, we must keep the hashing technique
-            decoupled from the rest of the system in our implementation so as to
-            avoid creating unnecessary work.
 
-        \item How does a DHT handle node discovery and linkage? Once a file name
-            has been hashed to a node, how do we find that node in the network?
-            There are a myriad of algorithms designed to do just that:
-            Kademlia\cite{kademlia}, Chord\cite{chord}, CAN,
-            Tapestry\cite{tapestry}, and
-            Pastry\cite{pastry}, to name a few.\\
-            Kademlia uses an XOR function on a GUID (per-node unique identifier)
-            to calculate the distance between two nodes, because the XOR
-            satisfies the requirements of an ideal distance function:
+            As described by the theorem, providing both consistency and
+            availability on well-managed internal networks (our test-case) is
+            generally not an issue.  Even so, the Kademlia protocol does an
+            excellent job at specifying the responsibilities of nodes to keep
+            their routing tables up-to-date and ensure that the key-values they
+            are responsible for exist with a high degree of redundancy.  In the
+            event of highly-congested networks or networks with partitions, the
+            Kademlia protocol (with some small changes to our existing
+            implementation) will naturally route around high-latency links.
+            This is achieved by the continuous re-ordering of active and
+            responsive nodes in the routing table, and the option of storing
+            contacts within k-buckets ordered on round-trip-time, which can be
+            easily measured.
+
+        \item How did we manage the issues presented by key-space remapping?  
+            
+            Is it possible for us to avoid the issue of key-space re-mapping
+            (changing the node location of data) when adding or removing nodes
+            from the network?\\
+
+            Thankfully, this is handled very nicely by the Kademlia protocol.
+            The first issue it resolves is re-mapping existing data to a new
+            node, and the second issue is caused by nodes leaving the network.
+            Image a node $n1$ joining the Kademlia network.  It does this by
+            pinging another node on the network that it knows about, $n2$.
+            When $n2$ hears about $n1$ (and $n1$'s ID), $n2$ issues
+            \code{store} requests to $n1$ for every piece of data $n2$ has in
+            its routing table for which the following conditions are met:
             \begin{itemize}
-                \item The distance from A to itself is 0,
-                \item The distance from A to B is the same as the distance from
-                    B to A, and
-                \item It satisfies the triangle inequality: the sum of the
-                    distance from A to B to C is greater than the distance
-                    between any two of A, B, or C, unless they lie on a line.
+                \item $n1$'s ID is closer to the data (by XOR) than the
+                    furthest among our k-many closest already known contacts to
+                    the data.
+                \item We are closest to the data of any of our already known
+                    contacts.
             \end{itemize}
-            Applications using Kademlia or slightly modified versions of the
-            Kademlia algorithm include torrent clients such as BitTorrent, other
-            P2P distributed file systems such as IPFS and Gnutella as well as
-            P2P chat, voice, and file-sharing programs like Tox.
+            This ensures that new nodes are holding data they are responsible
+            for, and it also minizes the number of extraneous stores being sent
+            over the network.  This is perhaps difficult to understand but
+            section 2.5 of the Kademlia paper describes it well.  Or, consider
+            the code below:
+\begin{lstlisting}[label=handle_node]
+def handle_node(self, contact):
+...
+   # See Kademlia paper section 2.5 on how to incorporate new nodes.
+   # We may have to store all values we have which are closer to the
+   # new node than they are to us.
+   for key, value in self.data.items():
+       # find neighbours close to the key value
+       nearest_contacts = self.table.find_nearest_neighbours(key)
+       # If there are fewer than k neighbours, store the key-value to the
+       # new node
+       if len(nearest_contacts) < self.table.k:
+           log.debug(f"Few contacts, storing data to new contact...")
+           # schedule the task in the event loop, continue to next data
+           asyncio.create_task(self.try_store_value(contact, key, value))
+           continue
+       # If there are k neighbours, only store the key-value if the new
+       # node is closer to the key the our neighbour furthest from the
+       # key, and if we are closer to the new node than any of our
+       # neighbours.
+       nearest_contact = nearest_contacts[0]
+       # are we nearer to this key than nearest_contact is?
+       were_nearest = \
+               self.this_node.distance(contact.getId()) < \
+               nearest_contact.distance(contact.getId())
+       furthest_contact = nearest_contacts[-1]
+       # Is contact closer to the key than the furthest contact?
+       close_enough_to_store = \
+               contact.distance(key) < furthest_contact.distance(key) 
+       if close_enough_to_store and were_nearest:
+           log.debug(f"Storing {data} to new contact...")
+           asyncio.create_task(self.try_store_value(contact, key, value))
+
+   self.table.add(contact)
+
+   return True
+\end{lstlisting}
+    
+    The second issue, that of nodes leaving the network, is handled by there
+    being a degree of redundancy for data.  Data are replicated by a factor of
+    $k$ on the network, and so a single node leaving has no practical effect.
+
     \end{itemize}
 
     Please see the bibliography for additional reading.
