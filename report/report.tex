@@ -356,17 +356,37 @@ return True
             \subsubsection{Find Node}
             \subsubsection{Ping}
             \subsubsection{Finding Nodes on the Network}
-	    	Searching on the Kademlia Network is done using a iterative, parrallel
-		algorithm. There are 2 parameters that control it: alpha and k (the same k refferred to in k 
-		buckets). Alpha controls the number of parrallel calls active at once and k controls
-		the number of nodes returned by each query of a node and the number of 
-		nodes queried before the search terminates. The algorithm works by selecting 
-		the alpha closest nodes to the target and querying them for nodes or values.
-		These nodes return their k closest contacts to the target (retrieved from the routing table)  or the target 
-		itself. This process is repeated until one of three conditions is met: k nodes
-		have been queried, the shortlist is empty, or we have found the target we were
-		searching for. Upon completion the node who called the search is returned either the k closest
-		nodes to the target found or a value, if the search was a value search.
+	    	Searching on the Kademlia Network is done using an iterative, parrallel
+		algorithm. There are 2 parameters that control the search: alpha and k 
+		(the same k referred to in k- buckets). Alpha controls the number of 
+		parrallel queries active at once and k controlsthe number of nodes 
+		returned by each query of a node as well as the maximum number of nodes 
+		queried before the search terminates. The nodes queried are taken from 
+		a list of nodes, ordered by their distance to the target, called the 
+		shortlist. The algorithm works by selecting the alpha closest nodes to 
+		the target from the shortlist and querying them for nodes. These 
+		queried nodes respond with their k closest contacts to the target 
+		(retrieved from their routing table), which could contain the target 
+		itself. The contacts are then put into the shortlist to be selected 
+		for future queries. If no node is found closer to the closest node found 
+		so far then the k closest nodes not yet queried are queried, resulting 
+		in the termination of the search after the responses are processed.
+		
+		This process is repeated until one of three conditions is met: k nodes
+		have been queried, the shortlist is empty, or we have found the target 
+		we were searching for. Upon completion of the search, the node who 
+		called the search is returned either the k closest nodes to the target 
+		found or a value, if the search was a value search.
+		
+		The other search used in Kademlia is a Value Search. This search 
+		functions almost identically to the Node Search only differing if the 
+		target is found. In the Node Search if the target is found the k closest 
+		contacts to the target are returned, but in the Value Search only the 
+		value associated with the target is returned and an iterative store is 
+		performed. An iterative store is a store RPC issued to the closest node 
+		found in the search that is known to not have the target being searched 
+		for. If a value search fails then no iterative store is performed and 
+		the k-closest nodes to the target are returned, just like in Node Search.
 
     \section{Measurements and Criteria}
     As referenced in the implementation plan, there are quantitative
