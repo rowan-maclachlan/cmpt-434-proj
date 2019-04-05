@@ -357,16 +357,16 @@ return True
             \subsubsection{Ping}
             \subsubsection{Finding Nodes on the Network}
 	    	Searching on the Kademlia Network is done using a iterative, parrallel
-		algorithm. There are 2 parameters that control its function: alpha and k.
-		Alpha controls the number of parrallel calls active at once. K controls
+		algorithm. There are 2 parameters that control it: alpha and k (the same k refferred to in k 
+		buckets). Alpha controls the number of parrallel calls active at once and k controls
 		the number of nodes returned by each query of a node and the number of 
 		nodes queried before the search terminates. The algorithm works by selecting 
 		the alpha closest nodes to the target and querying them for nodes or values.
-		These nodes then return their k closest nodes to the target or the target 
+		These nodes return their k closest contacts to the target (retrieved from the routing table)  or the target 
 		itself. This process is repeated until one of three conditions is met: k nodes
 		have been queried, the shortlist is empty, or we have found the target we were
-		searching for. Upon completion the calling node is returned either the k closest
-		nodes to the target we found or a value if the search was a value search.
+		searching for. Upon completion the node who called the search is returned either the k closest
+		nodes to the target found or a value, if the search was a value search.
 
     \section{Measurements and Criteria}
     As referenced in the implementation plan, there are quantitative
