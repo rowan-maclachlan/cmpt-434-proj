@@ -96,13 +96,20 @@
     \textit{new} by any standard, its continued use and development in various
     fields makes it a suitable candidate for an implementation project.
 
-    Kademlia provided an excellent learning opportunity with respect to
-    practical network-related computer skills, the application of some course
-    theory (implementing application-layer communication across different
-    networks over UDP implies some difficulties with port-forwarding at the
-    route --- this is what NAT would help with,) and much deeper understanding
-    of the Kademlia protocol as well as an understanding of some of the issues
-    overlay networks (DHTs in particular) must deal with.
+    Implementing the Kademlia protocol provided an excellent learning
+    opportunity with respect to various course materials:
+    \begin{itemize}
+        \item practical application-level network-related programming, 
+        \item the use of some \textit{*NIX} network tools (\textit{ifconfig,
+            ip, netstat}, etc.), 
+        \item the application of some course theory (implementing
+            application-layer communication across different networks over UDP
+            implies some difficulties with port-forwarding at the router ---
+            this is what NAT would help with,)
+        \item a much deeper understanding of the Kademlia protocol, and
+        \item an understanding of some of the issues overlay networks (DHTs in
+            particular) must deal with.
+    \end{itemize}
    
     \section{Objectives\label{objectives}}
     As referenced above, the problems presented by a DHT implementation are
@@ -118,27 +125,27 @@
     On one level, the implementation team is very happy with this result,
     considering the considerable hours invested in research, implementation,
     and testing.  Although we failed to produce a working proto-type with
-    enough left-over time to run large-scale tests (a hundred or more nodes), and
-    so could not collect meaningful data on DHT performance, we feel as though
-    the preliminary testing and class demo shows at least some acceptable level
-    of achievement.  While this may be dissappointing, it must be noted that
-    many excellent Kademlia implementations already exist, most of which
-    feature more finely-tuned, bugless, and efficient code.  In this sense,
-    simulation data would only have cemented an already clear understanding of
-    our implementations shortcomings.  Implementation decisions were almost
-    always made by giving far more weight to deadlines than to writing
-    performant code.
+    enough left-over time to collect, interpret, and display data from
+    large-scale tests (a hundred or more nodes), we feel as though the
+    preliminary testing and class demo show at least some acceptable level of
+    achievement.  While this may be disappointing, it must be noted that many
+    excellent Kademlia implementations already exist, most of which feature
+    more finely-tuned, bugless, and efficient code.  In this sense, simulation
+    data would only have cemented an already clear understanding of our
+    implementation's shortcomings.  Implementation decisions were almost always
+    made by giving far more weight to deadlines than to writing performant
+    code.  After all, premature optimization is the root of all evil.
     
-    More importantly, we exceeded our personal academic goals
-    --- with respect to interest and learning, the project was a complete
-    success.  
+    More importantly, we exceeded our personal academic goals --- with respect
+    to interest, learning, and technical achievement, the project was a
+    complete success.  
     
     \section{Implementation}
-        \subsection{Use}
+        \subsection{Use\label{use}}
             Using the program is relatively simple.  The project folder, once
-            downloaded (either provided by the students or downloaded from the
+            downloaded, either provided by the students or downloaded from the
             GIT repository
-            \href{https://github.com/rowan-maclachlan/cmpt-434-proj}{here}) has
+            \href{https://github.com/rowan-maclachlan/cmpt-434-proj}{here}, has
             a simple structure.  The source code is in the \code{kademlia}
             folder.  So long as the user has a python3.7 (or greater)
             environment, everything should work.
@@ -157,6 +164,16 @@
                 \item Use command \code{set}, \code{get}, \code{ping}, and
                     \code{inspect} to interact with the DHT.
             \end{enumerate}
+            In addition to this relatively simple use, the repository also
+            contains a script to launch an arbitrary number of nodes to run in
+            a non-interactive way.  More details exist within the script
+            itself, but this simulation script is operated as such:
+            \code{./simulation.sh 10 127.0.0.1 2000}.  This launches 10 nodes
+            that bootstrap off of an already existing node located at
+            \code{127.0.0.1:2000}, but these nodes don't accept user input.
+            Instead, they can be used to test the correctness and robustness of
+            the system.
+
             Please view the README for further details.
         \subsection{High-Level Overview and Tooling}
             \subsubsection{Networking}
@@ -223,7 +240,7 @@ def hash_function(data):
     return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
 \end{lstlisting}
             
-            As shown here, the returned digest is AND'ed with a mask --- this
+            As shown here, the returned digest is ANDed with a mask --- this
             mask is the length of the system-wide hash/ID bit length value ---
             called `B' in the Kademlia paper.  This mask then truncates the
             SHA-1 hash of the data to a value between 0 and $2^b-1$.  This
@@ -248,7 +265,8 @@ def hash_function(data):
 
                 As the maximum number of \code{k-bucket}s on any particular
                 node is simply the length of the ID space, they can all be
-                created at once, as such:
+                created at once, as in the initialization code for a routing
+                table \ref{routing_table}:
 \begin{lstlisting}[label=routing_table, caption={RoutingTable()}]
 self.buckets = [ KBucket(k) for _ in range(b) ]
 \end{lstlisting}
@@ -256,7 +274,8 @@ self.buckets = [ KBucket(k) for _ in range(b) ]
                 which may or may not be full and which may result in further
                 operations on the data structure, nodes can be inserted
                 directly into the \code{k-bucket} corresponding to their
-                distance from the routing table's owner, as such:
+                distance from the routing table's owner, as shown in
+                \ref{routing_table_add}:
 \begin{lstlisting}[label=routing_table_add, caption=RoutingTable.add()]
 return self.get_bucket(contact.getId()).add(contact)
 \end{lstlisting}
@@ -292,14 +311,14 @@ return self.buckets[index]
                 is simply a light wrapper for a list into which contacts are
                 stored.
                 
-                As described by the white
-                paper, \code{k-bucket}s, once full, need to make evaluations
-                about whether new contacts are inserted in the \code{k-bucket}
-                or not after it has reached capacity.  When a new node is
-                discovered but its \code{k-bucket} is full, it is only added if
-                the node at the head of the list is unresponsive.  Otherwise,
-                the new node is simply discarded, and the responsive node is
-                moved from the head to the tail of the list.
+                As described by the white paper, \code{k-bucket}s, once full,
+                need to make evaluations about whether or not new contacts are
+                inserted into the \code{k-bucket} after it has reached capacity.
+                When a new node is discovered but its \code{k-bucket} is full,
+                it is only added if the node at the head of the list is
+                unresponsive.  Otherwise, the new node is simply discarded, and
+                the responsive node is moved from the head to the tail of the
+                list.
 
                 There are a variety of reasons for this behaviour.  First, the
                 Kademlia authors illustrate that nodes which have existed on
@@ -402,7 +421,7 @@ return True
 		
 		This process is repeated until one of three conditions is met: $k$ nodes
 		have been queried, the shortlist is empty, or we have found the target 
-		we were searching for. Upon completion of the search, the node who 
+		we were searching for. Upon completion of the search, the node that 
 		called the search is returned either:
         \begin{itemize}
             \item the $k$ closest nodes to the target found, or,
@@ -431,7 +450,12 @@ return True
     revealed we could successfully launch as many as 10 nodes on the same
     network, and observe correct performance of node discovery, set, and get
     operations.  This was achieved through a small script to launch multiple
-    nodes at once, called \code{kad\_sim.py}.
+    nodes at once, called \code{simulation.sh}.
+
+    As described in \ref{use}, using this script allows the user to make an
+    evaluation of the system behaviour, robustness, and correctness.  Although
+    no meaningful performance data are collected from this simulation, the
+    infrastructure is in place.  
 
     \section{Technical Difficulties}
     Here, we list some of the technical considerations and their resolutions:

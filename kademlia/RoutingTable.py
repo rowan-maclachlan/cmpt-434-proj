@@ -8,9 +8,9 @@ log = logging.getLogger(__name__)
 
 class RoutingTable(object):
     """ 
-    class::RoutingTable
+    :class:`RoutingTable`
     Hold a p.params[B] KBuckets.  Each bucket has a max length of p.params[K].
-    The contents of a bucket are class::Contact.
+    The contents of a bucket are :class:`Contact`.
     Attributes
     ----------
     b : int
@@ -46,7 +46,7 @@ class RoutingTable(object):
 
         Parameters
         ----------
-        contact : Contact
+        contact : :class:`Contact`
             The contact to look for
 
         Return
@@ -72,7 +72,7 @@ class RoutingTable(object):
 
         Parameters
         ----------
-        contact : Contact
+        contact : :class:`Contact`
             The contact we wish to add.
 
         Return
@@ -97,7 +97,7 @@ class RoutingTable(object):
 
         Parameters
         ----------
-        contact : Contact
+        contact : :class:`Contact`
             The contact we wish to remove
 
         Return
@@ -122,12 +122,12 @@ class RoutingTable(object):
         ----------
         id : int
             The digest value for which we want to find the k nearest neighbours
-        exclude : Contact
+        exclude : :class:`Contact`
             Which contact we wish to exclude from the search, if Any
 
         Return
         ------
-        [Contact] : A list of Contacts.  These are the K nearest contacts in this
+        [:class:`Contact`] : A list of Contacts.  These are the K nearest contacts in this
         routing table to the ID provided.
         """
         n = how_many if how_many is not None else self.k
@@ -146,6 +146,19 @@ class RoutingTable(object):
 
 
     def get_bucket(self, id):
+        """
+        Get the bucket to which this id corresponds.
+
+        Parameters
+        ----------
+        id : int
+            The digest value whose bucket we want. 
+
+        Return
+        ------
+        :class:`KBucket` : A list of :class:`Contacts`.  These are the K
+        nearest contacts in this routing table to the ID provided.
+        """
         # TODO Can this be implemented better?
         # TODO If an id is different only in the least significant bit, does it
         # belong in bucket [0] or bucket[1]?  This assumes bucket[0] because

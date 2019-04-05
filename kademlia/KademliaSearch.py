@@ -1,7 +1,6 @@
 import sys
 import logging
 import asyncio
-
 from kademlia.Contact import Contact
 from kademlia.Contact import ContactHeap
 from kademlia.utils import gather_responses
@@ -17,10 +16,10 @@ log = logging.getLogger(__name__)
 class KademliaSearch():
     """
     The search function used by Kademlia to find nodes in a Kademlia network.
-    Asks the alpha closest nodes for the k closest nodes for their k closests nodes.
-    Adds the nodes returned to the list of closest nodes and repeats the process
-    until either k nodes have been asked, no closer nodes than the previous closest
-    was returned, or if the node/value was found. 
+    Asks the alpha closest nodes for the k closest nodes for their k closests
+    nodes.  Adds the nodes returned to the list of closest nodes and repeats
+    the process until either k nodes have been asked, no closer nodes than the
+    previous closest was returned, or if the node/value was found. 
 
     Parameters
     ----------
@@ -285,10 +284,11 @@ class KademliaValueSearch(KademliaSearch):
 
 class KademliaStoreSearch(KademliaSearch):
     """
-    Does a Node Search but instead of returning all nodes it sends a store rpc to each node with 
-    the given data.
+    Does a Node Search but instead of returning all nodes it sends a store rpc
+    to each node with the given data.
 
-    Parameters:
+    Parameters
+    ----------
     key : int
         The key of the data.
     value : str

@@ -10,10 +10,10 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* :ref:`Final Project Report <_final>`
-* :ref:`Kademlia Module <_module>`
-* :ref:`Simulation Files <_simulation>`
-* :ref:`README <_readme>`
+* :ref:`Final Report <final>`
+* :ref:`Kademlia Module <module>`
+* :ref:`Simulation Files <simulation>`
+* :ref:`README <readme>`
 
 
 .. toctree::

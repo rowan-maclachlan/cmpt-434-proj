@@ -115,17 +115,9 @@ class ContactHeap():
 
     def __init__(self, node_id, maxsize=p.params['k']):
         self._node_id = node_id
-        """
-        """
         self._maxsize = maxsize
-        """
-        """
         self._heap = []
-        """
-        """
         self._node_dict = {}
-        """
-        """
 
 
     def remove(self, contacts):
@@ -137,7 +129,7 @@ class ContactHeap():
 
         Parameters
         ----------
-        contacts : list
+        contacts : [:class:`Contact`]
             The contacts to remove from the heap
         """
         if not contacts:
@@ -160,7 +152,7 @@ class ContactHeap():
 
         Parameters
         ----------
-        contact : :class: `Contact`
+        contact : :class:`Contact`
             The contact to add.
         """
         if not contact or contact.getId() == self._node_id:
@@ -181,7 +173,7 @@ class ContactHeap():
 
         Parameters
         ----------
-        contacts : list
+        contacts : [:class:`Contact`]
             The list of contacts to be added.
         """
         for ell in contacts:
