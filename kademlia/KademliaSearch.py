@@ -11,12 +11,8 @@ import kademlia.params as p
 
 log = logging.getLogger(__name__)
 
-"""
-    TODOs
-"""
 #TODO: make sure nodes are active before returning them
 #TODO: handle iterative store failures and StoreSearch failures
-
 
 class KademliaSearch():
     """
@@ -28,14 +24,14 @@ class KademliaSearch():
 
     Parameters
     ----------
-    initiator : :class:  `Node`
+    initiator : :class:`Node`
         The node that initaited the search.
-    protocol : :class: `Protocol`
+    protocol : :class:`Protocol`
         The protocol used for finding nodes. 
     target_id : intorsomething
         The id of the node being searched for.
-    contacts : [Contact]
-        A list of :class: `Contact`
+    contacts : [:class:`Contact`]
+        A list of :class:`Contact`
     k : int
         The maximum number of nodes queried or returned from a query.
     alpha : int
@@ -43,9 +39,9 @@ class KademliaSearch():
 
     Attributes
     ----------
-    _initiator : :class:  `Node`
+    _initiator : :class:`Node`
         The node that initaited the search.
-    _protocol : :class: `Protocol`
+    _protocol : :class:`Protocol`
         The protocl used for finding nodes.
     _target_id : intorsomething
         The id of the node being searched for.
@@ -55,7 +51,7 @@ class KademliaSearch():
         The concurrency parameters for kademlia search
     _k_val : int
         The maximum number of queries
-    _closest_node : :class: `Node`
+    _closest_node : :class:`Node`
         The closest node found so far in this search.
     _response_dict : dict
         a dictionary of responses with keys of the sender's ID who gave the response and values as 
@@ -65,37 +61,16 @@ class KademliaSearch():
 
     def __init__(self, initiator, protocol, target_id, contacts, k=p.params['k'], alpha=p.params['alpha']):
         self._initiator = initiator
-        """ 
-        """
         self._protocol = protocol
-        """
-        """
         self._target_id = target_id
-        """
-        """
         self._shortlist = ContactHeap(target_id, k)
         self._shortlist.push_all(contacts)
-        log.debug(f"Creating search with peers: {contacts}")
-        """
-        """
         self._k_val = k
-        """
-        """
         self._alpha = alpha
-        """
-        """
         self._closest_node = self._shortlist.peek_first()[1]
-        """
-        """
         self._contacted = ContactHeap(target_id, k)
-        """
-        """
         self._active_queries = {}
-        """
-        """
         self._finished = False
-        """
-        """
 
 
     async def _search(self, rpc_method):
@@ -105,7 +80,7 @@ class KademliaSearch():
 
         Parameters
         ----------
-        rpc_method : :class: `rpc_protocol_method`
+        rpc_method : rpc_protocol_method
             The method used to find nodes.
         """ 
         prev_closest_node = None
@@ -155,8 +130,6 @@ class KademliaNodeSearch(KademliaSearch):
 
     def __init__(self, initiator, protocol, target_id, contacts, k=p.params['k'], alpha=p.params['alpha']):
         KademliaSearch.__init__(self, initiator, protocol, target_id, contacts, k, alpha)
-        """
-        """
 
 
     async def search(self, rpc_method):
@@ -219,7 +192,7 @@ class KademliaValueSearch(KademliaSearch):
 
     Attributes
     ----------
-    _iterative_store_candidates : :class: `Node`
+    _iterative_store_candidates : :class:`Node`
         The candidates for an iterative store.
     """
 
@@ -239,7 +212,7 @@ class KademliaValueSearch(KademliaSearch):
         
         Parameters
         ----------
-        rpc_method : :class: `rpc_protocol_method`
+        rpc_method : rpc_protocol_method
             The method used to find nodes.
         """
         return await self._search(rpc_method)
