@@ -66,9 +66,9 @@ T_REPUBLISH = 'tRepublish'
 # No need to do the multi-threaded 'node discover' thing yet
 params[ALPHA] = 1
 # Set this to 16 so that we can actually tractibly think about it at first
-params[B] = 8
+params[B] = 16
 # set k to a small number at first so its easier to analyze
-params[K] = 3
+params[K] = 4
 
 # Use smaller values for time parameters to keep things tangible
 params[T_EXPIRE] = 128 # 86400 in the lit
