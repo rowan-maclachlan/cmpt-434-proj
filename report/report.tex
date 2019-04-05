@@ -1,4 +1,5 @@
 \documentclass[12pt]{report}
+\setcounter{secnumdepth}{3}
 \usepackage[T1]{fontenc}  % Font encoding
 \usepackage{mathptmx}     % Choose Times font 
 \usepackage{microtype}    % Improves line breaks      
@@ -57,7 +58,7 @@
 	\titlepage{
 		\vspace*{150px} % Push down title
 		\centering % Centre title
-		{\large \sc A Report on a Kademlia Implementation Attempt\\}
+		{\large \sc A Report on a Kademlia Implementation\\}
 		\vspace*{30px} % Push down sub text
 		\hrulefill \\
 		\vspace*{20px}
@@ -65,7 +66,7 @@
 		\vspace*{20px}
 		\hrulefill \\
 		\vspace*{30px}
-		February 27, 2019\\
+		April 5th, 2019\\
 		\vspace*{180px}
 		
 		\raggedright
@@ -84,7 +85,7 @@
 	
 	\pagebreak
 
-    \section{Introduction}
+    \section{Introduction\label{introduction}}
     DHTs are similar in principle to a regular hash table in that they provide
     the structure for fast retrieval of an object by referencing the location
     of the object's hash value.  However, a distributed hash table is stored
@@ -103,7 +104,7 @@
     of the Kademlia protocol as well as an understanding of some of the issues
     overlay networks (DHTs in particular) must deal with.
    
-    \section{Objectives}
+    \section{Objectives\label{objectives}}
     As referenced above, the problems presented by a DHT implementation are
     myriad and often difficult to solve, but by no means impossible.  By implementing
     an incremental plan to gradually roll out more complex features, taking
@@ -117,7 +118,7 @@
     On one level, the implementation team is very happy with this result,
     considering the considerable hours invested in research, implementation,
     and testing.  Although we failed to produce a working proto-type with
-    enough left-over time to run large-scale tests (100's or more nodes), and
+    enough left-over time to run large-scale tests (a hundred or more nodes), and
     so could not collect meaningful data on DHT performance, we feel as though
     the preliminary testing and class demo shows at least some acceptable level
     of achievement.  While this may be dissappointing, it must be noted that
@@ -141,7 +142,10 @@
             a simple structure.  The source code is in the \code{kademlia}
             folder.  So long as the user has a python3.7 (or greater)
             environment, everything should work.
-            \begin{itemize}
+            \begin{enumerate}
+                \item Configure your python environment so that the
+                    \code{python3} command points to an installation of
+                    python3.7 or greater.
                 \item \code{git clone
                     https://github.com/rowan-maclachlan/cmpt-434-proj}
                 \item \code{cd cmpt-434-proj}
@@ -152,10 +156,10 @@
                     without arguments.
                 \item Use command \code{set}, \code{get}, \code{ping}, and
                     \code{inspect} to interact with the DHT.
-            \end{itemize}
+            \end{enumerate}
             Please view the README for further details.
         \subsection{High-Level Overview and Tooling}
-            \subsubsection{RPC library}
+            \subsubsection{Networking}
                 The Kademlia paper implies that the protocol is implemented
                 with datagrams\cite{kademlia}.  Typically, clients operating
                 behind a NAT (Network Address Translator) do not need to worry
@@ -166,11 +170,12 @@
                 other nodes on the overlay network despite being located behind
                 a NAT.  This requires the use of a NAT traversal technique such
                 as Hole-Punching or SOCKS (Socket Secure) to overcome the
-                difficulties inherent in routing requests through NATs.  This
-                makes application use on LANs behind a router address difficult
-                without port-forwarding and configuration overhead.  Because of
-                this, our application was tested only on a LAN.
-
+                difficulties inherent in routing requests from LANs over the
+                internet.  This makes application use on LANs behind a router
+                address difficult without port-forwarding and configuration
+                overhead.  Because of this, our application was tested only
+                within a LAN.
+            \subsubsection{RPC library}
                 Our primary investigation showed other Kademlia
                 implementations using the core python library asyncio to manage
                 callback procedures for asyncronous code execution. While the
@@ -188,10 +193,10 @@
                 network code." This is exactly the Kademlia
                 use-case.\cite{asyncio}
 
-            \subsubsection{Hashing}\label{hashing_design}
+            \subsubsection{Hashing\label{hashing_design}}
                 Kademlia specifies the use of the 160-bit SHA-1 hash for data,
                 and 160-bit node IDs and 160
-                \code{k-buckets}\ref{bucket_design}, to accompany that.
+                \code{k-buckets} (\ref{bucket_design}), to accompany that.
                 This parameter of ID and hash length, however, is not mandated.
                 The python library hashlib provides an array of hashing
                 functions, cryptographic and otherwise, including the SHA-1
@@ -206,13 +211,13 @@ def hash_function(data):
     """
     Hash the data to a byte array of length p.params[B] / 8
 
-    TODO: How do we truncate this large integer?  mod?  or mask?
-        what would we mod by?
-
+    Parameters
+    ----------
     data : binary data
     
-    int 
-        A hash of length p.params[B] / 8 in hexadecimal string form.
+    Return
+    ------
+    int : The digest of the input data, trimmed to the ID space.
     """
         
     return int(hashlib.sha1(data).hexdigest(), 16) & get_mask() 
@@ -221,11 +226,11 @@ def hash_function(data):
             As shown here, the returned digest is AND'ed with a mask --- this
             mask is the length of the system-wide hash/ID bit length value ---
             called `B' in the Kademlia paper.  This mask then truncates the
-            sha1 hash of the data to a value between 0 and $2^b-1$.  This
+            SHA-1 hash of the data to a value between 0 and $2^b-1$.  This
             allows the value of `B' to be effortlessly changed for more
             practical use of the network or for larger-scale simulations.
 
-            \subsubsection{Routing Table Design}\label{routing_table_design}
+            \subsubsection{Routing Table Design\label{routing_table_design}}
                 Study of different Kademlia
                 implementations\cite{implementation_01}\cite{implementation_02}\cite{implementation_03}\cite{implementation_04}
                 reveal that most implementations implement their routing table
@@ -244,7 +249,7 @@ def hash_function(data):
                 As the maximum number of \code{k-bucket}s on any particular
                 node is simply the length of the ID space, they can all be
                 created at once, as such:
-\begin{lstlisting}[label=RoutingTable.__init__]
+\begin{lstlisting}[label=routing_table, caption={RoutingTable()}]
 self.buckets = [ KBucket(k) for _ in range(b) ]
 \end{lstlisting}
                 Instead of attempting to insert nodes into a \code{k-bucket}
@@ -252,7 +257,7 @@ self.buckets = [ KBucket(k) for _ in range(b) ]
                 operations on the data structure, nodes can be inserted
                 directly into the \code{k-bucket} corresponding to their
                 distance from the routing table's owner, as such:
-\begin{lstlisting}[label=RoutingTable.add]
+\begin{lstlisting}[label=routing_table_add, caption=RoutingTable.add()]
 return self.get_bucket(contact.getId()).add(contact)
 \end{lstlisting}
                 where the method \code{RoutingTable.get\_bucket(id)} calculates
@@ -260,7 +265,7 @@ return self.get_bucket(contact.getId()).add(contact)
                 bit of the distance between the ID of the routing table's owner
                 and the ID of the contact we are trying to add to the routing
                 table, like so:
-\begin{lstlisting}[label=RoutingTable.get_bucket]
+\begin{lstlisting}[label=routing_table_get_bucket, caption={RoutingTable.get\_bucket()}]
 distance = self.id ^ id
 index = 0
 while distance > 1:
@@ -278,7 +283,7 @@ return self.buckets[index]
                 relatively small.  Ultimately, this decision was made because
                 it was believed to be simpler.
 
-            \subsubsection{Bucket Design}\label{bucket_design}
+            \subsubsection{Bucket Design\label{bucket_design}}
                 The \code{k-bucket} is a container
                 that holds contact information for other nodes on the Kademlia
                 network.  Each \code{k-bucket} is created with a maximum
@@ -313,7 +318,7 @@ return self.buckets[index]
                 new nodes are simply added (because they are known to be
                 active) and old nodes are kicked out of the routing table.
 
-\begin{lstlisting}[label=KBucket.add]
+\begin{lstlisting}[caption=KBucket.add(), label=kbucket_add]
 if contact in self.contacts:
     # If this contact already appears in the list, move it to the back
     # of the list
@@ -337,54 +342,95 @@ return True
             removals from the head and tail of the list.
 
         \subsection{Kademlia Remote Procedure Calls}
-            \subsubsection{Store}
-            \subsubsection{Find Value}
+            \subsubsection{Store \label{store}}
+               The store operation is used to save a value onto the Kademlia
+               network.  Our application accepts a \code{String}-type key and a
+               \code{String}-type value, as such: \code{set my-key my-value}.
+               The key digest is then taken, which maps the key to a value in
+               the node-space range (between 0 and $2^b-1$).  The node then
+               attempts to find the closest node on the network to the key
+               digest via the \code{find\_nodes} \ref{find_nodes} algorithm.  It
+               then issues a store request to $k$ of the nodes closest to the
+               value which it found in its search.  A store request message
+               consists of the sender's ID, the digest, and the value.  A node
+               that receives a store request assumes it is responsible for the
+               key and stores the value without exception.  Because the sender
+               ID is sent along with the message, the receiving node can take
+               steps to properly handle the new contact via the
+               \code{handle\_node} procedure (see \ref{handle_node}).
+            \subsubsection{Find Value\label{find_value}}
+                This operation is used to find a value on the network.
+                Implementation depends on the iterative Node Find algorithm
+                defined below \ref{find_nodes}.  When this command is received
+                by a node, it returns to the sender either the value requested
+                (if the receiver has the value in its data store) or a list of
+                the $k$ closest nodes in its routing table to the value being
+                sought.
             \subsubsection{Find Node}
+                This operation is very similar to the Find Value
+                \ref{find_value} operation.  The difference is that the node
+                issuing the request does not need to anticipate receiving a
+                value \textit{or} a list of contact --- only contacts are
+                returned by the receiving node.
             \subsubsection{Ping}
-            \subsubsection{Finding Nodes on the Network}
-	    	Searching on the Kademlia Network is done using an iterative, parrallel
-		algorithm. There are 2 parameters that control the search: alpha and k 
-		(the same k referred to in k- buckets). Alpha controls the number of 
-		parrallel queries active at once and k controlsthe number of nodes 
-		returned by each query of a node as well as the maximum number of nodes 
-		queried before the search terminates. The nodes queried are taken from 
-		a list of nodes, ordered by their distance to the target, called the 
-		shortlist. The algorithm works by selecting the alpha closest nodes to 
-		the target from the shortlist and querying them for nodes. These 
-		queried nodes respond with their k closest contacts to the target 
-		(retrieved from their routing table), which could contain the target 
-		itself. The contacts are then put into the shortlist to be selected 
-		for future queries. If no node is found closer to the closest node found 
-		so far then the k closest nodes not yet queried are queried, resulting 
-		in the termination of the search after the responses are processed.
+                This operation is used to check for liveness on the network.
+                Specifically, it is used by nodes to determine whether a new
+                contact should replace an old contact in its routing table.  If
+                the old contact is unresponsive (it does not respond to the
+                \code{ping} operation), it will be removed from the routing
+                table in favour of the new contact, which is known to be live.
+                This is described in more detail in the implementation section
+                \ref{bucket_design} on \code{KBucket} design.
+            \subsubsection{Finding Nodes on the Network\label{find_nodes}}
+            Searching on the Kademlia Network is done using an iterative,
+            parallel algorithm. There are 2 parameters that control the search:
+            $\alpha$ and $k$ (the same $k$ referred to in k-buckets). $\alpha$
+            controls the number of parallel queries active at once and $k$
+            controls the number of nodes returned by each query of a node as
+            well as the maximum number of nodes queried before the search
+            terminates. The nodes queried are taken from a list of nodes,
+            ordered by their distance to the target, called the shortlist. The
+            algorithm works by selecting the $\alpha$ closest nodes to the
+            target from the shortlist and querying them for nodes. These
+            queried nodes respond with their $k$ closest contacts to the target
+            (retrieved from their routing table), which could contain the
+            target itself. The contacts are then put into the shortlist to be
+            selected for future queries. If no node is found closer to the
+            closest node found so far then the $k$ closest nodes not yet queried
+            are queried, resulting in the termination of the search after the
+            responses are processed.
 		
-		This process is repeated until one of three conditions is met: k nodes
+		This process is repeated until one of three conditions is met: $k$ nodes
 		have been queried, the shortlist is empty, or we have found the target 
 		we were searching for. Upon completion of the search, the node who 
-		called the search is returned either the k closest nodes to the target 
-		found or a value, if the search was a value search.
+		called the search is returned either:
+        \begin{itemize}
+            \item the $k$ closest nodes to the target found, or,
+            \item a value, if the search was a value search.
+        \end{itemize}
 		
-		The other search used in Kademlia is a Value Search. This search 
-		functions almost identically to the Node Search only differing if the 
-		target is found. In the Node Search if the target is found the k closest 
-		contacts to the target are returned, but in the Value Search only the 
-		value associated with the target is returned and an iterative store is 
-		performed. An iterative store is a store RPC issued to the closest node 
-		found in the search that is known to not have the target being searched 
-		for. If a value search fails then no iterative store is performed and 
-		the k-closest nodes to the target are returned, just like in Node Search.
+        The other search used in Kademlia is a Value Search. This search
+        functions almost identically to the Node Search --- differing only if
+        the target is found. 
+        \begin{itemize}
+            \item If the target is found in a Node Search, the $k$ closest
+                contacts to the target are returned. 
+            \item In a Value Search, only the value associated with the target
+                is returned. A store \ref{store} is then issued to the closest
+                node found in the search that did not have the target data. 
+        \end{itemize}
+        If a Value Search fails (probably because the Kademlia network does not
+        contain a mapping for the key), then no store is performed and the $k$
+        closest nodes to the target are returned, just as in the Node Search.
 
     \section{Measurements and Criteria}
-    As referenced in the implementation plan, there are quantitative
-    measurements available when considering the success or failure of our
-    implementation.  Comparing these values to those achieved by more mature
-    DHT implementations will provide valuable insight into the challenges posed
-    by DHTs, and should be included in our final report.  However, the most
-    valuable metric will be the realization of a working MVP.  This may be
-    something as simple as the observed and correct distributed storage of one
-    or more files on the personal computers of the researchers (Chris and
-    Rowan) or a more glorious success - or, perhaps, the real success is the
-    friends we made along the way.
+    As referenced previously (\ref{objectives}), we failed to collect any
+    meaningful simulation data, and so network performance was not measured.
+    The only quantitative measurement of project success we have is the number
+    of active nodes we could launch on the same network.  Preliminary testing
+    revealed we could successfully launch as many as 8 nodes on the same
+    network, and observe correct performance of node discovery, set, and get
+    operations.
 
     \section{Technical Difficulties}
     Here, we list some of the technical considerations and their resolutions:
@@ -486,13 +532,13 @@ return True
             Thankfully, this is handled very nicely by the Kademlia protocol.
             The first issue it resolves is re-mapping existing data to a new
             node, and the second issue is caused by nodes leaving the network.
-            Image a node $n1$ joining the Kademlia network.  It does this by
-            pinging another node on the network that it knows about, $n2$.
-            When $n2$ hears about $n1$ (and $n1$'s ID), $n2$ issues
-            \code{store} requests to $n1$ for every piece of data $n2$ has in
+            Image a node $n_1$ joining the Kademlia network.  It does this by
+            pinging another node on the network that it knows about, $n_2$.
+            When $n_2$ hears about $n_1$ (and $n_1$'s ID), $n_2$ issues
+            \code{store} requests to $n_1$ for every piece of data $n_2$ has in
             its routing table for which the following conditions are met:
             \begin{itemize}
-                \item $n1$'s ID is closer to the data (by XOR) than the
+                \item $n_1$'s ID is closer to the data (by XOR) than the
                     furthest among our k-many closest already known contacts to
                     the data.
                 \item We are closest to the data of any of our already known
@@ -503,7 +549,7 @@ return True
             over the network.  This is perhaps difficult to understand but
             section 2.5 of the Kademlia paper describes it well.  Or, consider
             the code below:
-\begin{lstlisting}[label=handle_node]
+\begin{lstlisting}[caption={Protocol.handle\_node()}, label=handle_node]
 def handle_node(self, contact):
 ...
    # See Kademlia paper section 2.5 on how to incorporate new nodes.
@@ -541,7 +587,7 @@ def handle_node(self, contact):
    return True
 \end{lstlisting}
     
-    The second issue, that of nodes leaving the network, is handled by there
+    The second issue of nodes leaving the network is handled by there
     being a degree of redundancy for data.  Data are replicated by a factor of
     $k$ on the network, and so a single node leaving has no practical effect.
 
