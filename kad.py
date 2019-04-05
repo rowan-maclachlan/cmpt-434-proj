@@ -4,6 +4,9 @@ import asyncio
 
 from kademlia.Node import Node
 
+# This script is used to launch non-interactive nodes.  They can only
+# bootstrap, and can't be issued commands.  They are created by the
+# simulation.sh script to help analyze network behaviour
 
 def prompt():
     print("'set <key (str)> <value (str)>' to store data\n"\

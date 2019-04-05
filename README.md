@@ -14,5 +14,10 @@ After installing the toolchain (see above) build documentation with
 \`make html\`.  Then, you can view the documentation by opening
 \`/docs/_build/index.html\`
 
-see https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
+see "https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard"
 on pydoc standard.  Follow this so that Sphinx can produce documentation.
+
+Run python3 kad.py to see application usage.
+
+To run the simulation (launch multiple nodes at once) run ./simulation.sh.
+Inspect the file for instructions on how to run ./simulation.sh

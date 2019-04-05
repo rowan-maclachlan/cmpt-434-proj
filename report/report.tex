@@ -428,9 +428,10 @@ return True
     meaningful simulation data, and so network performance was not measured.
     The only quantitative measurement of project success we have is the number
     of active nodes we could launch on the same network.  Preliminary testing
-    revealed we could successfully launch as many as 8 nodes on the same
+    revealed we could successfully launch as many as 10 nodes on the same
     network, and observe correct performance of node discovery, set, and get
-    operations.
+    operations.  This was achieved through a small script to launch multiple
+    nodes at once, called \code{kad\_sim.py}.
 
     \section{Technical Difficulties}
     Here, we list some of the technical considerations and their resolutions:
