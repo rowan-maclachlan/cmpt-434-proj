@@ -3,6 +3,7 @@ import logging
 
 from rpcudp.protocol import RPCProtocol
 from kademlia.Contact import Contact
+from kademlia.utils import distance_to
 
 log = logging.getLogger(__name__)
 
@@ -286,12 +287,13 @@ class Protocol(RPCProtocol):
             nearest_contact = nearest_contacts[0]
             # are we nearer to this key than nearest_contact is?
             were_nearest = \
-                    self.this_node.distance(contact.getId()) < \
-                    nearest_contact.distance(contact.getId())
+                    distance_to(self.this_node.getId(), contact.getId()) < \
+                    distance_to(nearest_contact.getId(), contact.getId())
             furthest_contact = nearest_contacts[-1]
             # Is contact closer to the key than the furthest contact?
             close_enough_to_store = \
-                    contact.distance(key) < furthest_contact.distance(key) 
+                    distance_to(contact.getId(), key) < \
+                    distance_to(furthest_contact.getId(), key)
             if close_enough_to_store and were_nearest:
                 log.debug(f"Storing {data} to new contact...")
                 asyncio.create_task(self.try_store_value(contact, key, value))
